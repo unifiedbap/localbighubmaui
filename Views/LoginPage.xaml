@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:LoginViewModel"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource Bg}">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="28"
+            Spacing="16"
+            VerticalOptions="Center">
+
+            <Label
+                Text="Big Local Hub"
+                FontSize="30"
+                FontAttributes="Bold"
+                TextColor="{StaticResource Text}"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Sign in to your company workspace"
+                FontSize="14"
+                TextColor="{StaticResource Text2}"
+                HorizontalOptions="Center"
+                Margin="0,0,0,14" />
+
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="14">
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="EMAIL" Style="{StaticResource FieldLabel}" />
+                        <Entry
+                            Text="{Binding Email}"
+                            Keyboard="Email"
+                            IsEnabled="{Binding Busy, Converter={StaticResource InverseBool}}"
+                            Placeholder="you@company.com"
+                            Style="{StaticResource FormEntry}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="PASSWORD" Style="{StaticResource FieldLabel}" />
+                        <Entry
+                            Text="{Binding Password}"
+                            IsPassword="True"
+                            IsEnabled="{Binding Busy, Converter={StaticResource InverseBool}}"
+                            Placeholder="••••••••"
+                            ReturnType="Go"
+                            ReturnCommand="{Binding SignInCommand}"
+                            Style="{StaticResource FormEntry}" />
+                    </VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding Error}"
+                        IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                        TextColor="{StaticResource Danger}"
+                        FontSize="13" />
+
+                    <Button
+                        Text="Sign In"
+                        Command="{Binding SignInCommand}"
+                        IsVisible="{Binding Busy, Converter={StaticResource InverseBool}}"
+                        Style="{StaticResource PrimaryButton}" />
+
+                    <ActivityIndicator
+                        IsVisible="{Binding Busy}"
+                        IsRunning="{Binding Busy}"
+                        Color="{StaticResource Accent}"
+                        HeightRequest="44" />
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.MorePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:MoreViewModel"
+    Title="More"
+    BackgroundColor="{StaticResource Bg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Account" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="7">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Company" Style="{StaticResource StatSub}" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding CompanyName}" FontSize="14" TextColor="{StaticResource Text}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Name" Style="{StaticResource StatSub}" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding UserName}" FontSize="14" TextColor="{StaticResource Text}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Email" Style="{StaticResource StatSub}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding UserEmail}" FontSize="14" TextColor="{StaticResource Text}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="Role" Style="{StaticResource StatSub}" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding RoleLabel}" FontSize="14" TextColor="{StaticResource Text}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Pipeline Wording" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding PipelineStyle}" FontSize="14" TextColor="{StaticResource Text}" />
+                    <Label
+                        Text="Stage names shown across Leads and Jobs come from this company's business type, with any per-company overrides applied. The stored status values never change."
+                        FontSize="12.5"
+                        TextColor="{StaticResource Text3}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Modules" Style="{StaticResource SectionTitle}" />
+                    <Label
+                        Text="Enabled for this company. This MAUI build is a first pass — modules marked otherwise are still web/mobile only."
+                        FontSize="12.5"
+                        TextColor="{StaticResource Text3}" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ModuleRows}" Spacing="0">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ModuleRow">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,7">
+                                    <Label Grid.Column="0" Text="{Binding Label}" FontSize="14" TextColor="{StaticResource Text}" />
+                                    <Label Grid.Column="1" Text="{Binding Availability}" FontSize="12" TextColor="{StaticResource Text3}" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button
+                Text="Sign Out"
+                Command="{Binding SignOutCommand}"
+                Style="{StaticResource GhostButton}"
+                Margin="0,4,0,20" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

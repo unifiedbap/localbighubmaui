@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:DashboardViewModel"
+    Title="Dashboard"
+    BackgroundColor="{StaticResource Bg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Live-demo banner, mirroring the web app's sandbox notice -->
+            <Border
+                IsVisible="{Binding IsDemo}"
+                BackgroundColor="{StaticResource Accent}"
+                Stroke="Transparent"
+                StrokeShape="RoundRectangle 8"
+                Padding="12,8">
+                <Label
+                    Text="Live demo — explore freely. This sandbox resets every night."
+                    TextColor="White"
+                    FontSize="12.5"
+                    FontAttributes="Bold"
+                    HorizontalTextAlignment="Center" />
+            </Border>
+
+            <Label
+                Text="{Binding Error}"
+                IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                TextColor="{StaticResource Danger}"
+                FontSize="13" />
+
+            <!-- Stat tiles -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardBorder}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="OPEN LEADS" Style="{StaticResource StatLabel}" />
+                        <Label Text="{Binding OpenLeads}" Style="{StaticResource StatValue}" />
+                        <Label Text="{Binding TotalLeads, StringFormat='of {0} total'}" Style="{StaticResource StatSub}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardBorder}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="ACTIVE JOBS" Style="{StaticResource StatLabel}" />
+                        <Label Text="{Binding ActiveJobs}" Style="{StaticResource StatValue}" />
+                        <Label Text="{Binding TotalJobs, StringFormat='of {0} total'}" Style="{StaticResource StatSub}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardBorder}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="TOTAL CLIENTS" Style="{StaticResource StatLabel}" />
+                        <Label Text="{Binding TotalClients}" Style="{StaticResource StatValue}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardBorder}">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="COMPANY" Style="{StaticResource StatLabel}" />
+                        <Label
+                            Text="{Binding CompanyName}"
+                            FontSize="17"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource Text}"
+                            LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </Grid>
+
+            <!-- Recent leads -->
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Recent Leads" Style="{StaticResource SectionTitle}" />
+
+                    <Label
+                        Text="No leads yet."
+                        TextColor="{StaticResource Text2}"
+                        FontSize="14"
+                        IsVisible="{Binding RecentLeads.Count, Converter={StaticResource IsZero}}" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentLeads}" Spacing="0">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LeadRow">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,9" ColumnSpacing="8">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="1">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="15" TextColor="{StaticResource Text}" />
+                                        <Label Text="{Binding ServiceType}" FontSize="13" TextColor="{StaticResource Text2}" />
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="1" Style="{StaticResource BadgeBorder}" VerticalOptions="Center">
+                                        <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeText}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Recent jobs -->
+            <Border Style="{StaticResource CardBorder}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Recent Jobs" Style="{StaticResource SectionTitle}" />
+
+                    <Label
+                        Text="No jobs yet."
+                        TextColor="{StaticResource Text2}"
+                        FontSize="14"
+                        IsVisible="{Binding RecentJobs.Count, Converter={StaticResource IsZero}}" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentJobs}" Spacing="0">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:JobRow">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,9" ColumnSpacing="8">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="1">
+                                        <Label Text="{Binding JobName}" FontAttributes="Bold" FontSize="15" TextColor="{StaticResource Text}" />
+                                        <Label Text="{Binding ClientName}" FontSize="13" TextColor="{StaticResource Text2}" />
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="1" Style="{StaticResource BadgeBorder}" VerticalOptions="Center">
+                                        <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeText}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Dark theme approximating apps/web/src/index.css, so the MAUI rendition
+    reads as the same product as the web hub rather than a default MAUI app.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:svc="clr-namespace:BigLocalHub.Services">
+
+    <!-- Converters -->
+    <svc:InverseBoolConverter x:Key="InverseBool" />
+    <svc:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmpty" />
+    <svc:IsZeroConverter x:Key="IsZero" />
+
+    <!-- Palette -->
+    <Color x:Key="Bg">#0D0D0F</Color>
+    <Color x:Key="Surface">#17171B</Color>
+    <Color x:Key="Surface2">#1F1F25</Color>
+    <Color x:Key="BorderColor">#2C2C34</Color>
+    <Color x:Key="Text">#F2F2F5</Color>
+    <Color x:Key="Text2">#A0A0AC</Color>
+    <Color x:Key="Text3">#6E6E7A</Color>
+    <Color x:Key="Accent">#0F77E6</Color>
+    <Color x:Key="Danger">#E05252</Color>
+    <Color x:Key="Success">#3FB37F</Color>
+
+    <!-- Cards -->
+    <Style x:Key="CardBorder" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Stroke" Value="{StaticResource BorderColor}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style x:Key="ListCardBorder" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Stroke" Value="{StaticResource BorderColor}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="Margin" Value="12,5" />
+    </Style>
+
+    <!-- Stat tiles -->
+    <Style x:Key="StatLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CharacterSpacing" Value="1" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Text2}" />
+    </Style>
+
+    <Style x:Key="StatValue" TargetType="Label">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Accent}" />
+    </Style>
+
+    <Style x:Key="StatSub" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource Text3}" />
+    </Style>
+
+    <Style x:Key="SectionTitle" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Text}" />
+    </Style>
+
+    <!-- Badges -->
+    <Style x:Key="BadgeBorder" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="Stroke" Value="{StaticResource BorderColor}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+        <Setter Property="Padding" Value="9,4" />
+    </Style>
+
+    <Style x:Key="BadgeText" TargetType="Label">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Text2}" />
+    </Style>
+
+    <!-- Filter chips -->
+    <Style x:Key="ChipBorder" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="Stroke" Value="{StaticResource BorderColor}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+        <Setter Property="Padding" Value="13,7" />
+    </Style>
+
+    <Style x:Key="ChipText" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{StaticResource Text2}" />
+    </Style>
+
+    <!-- Forms -->
+    <Style x:Key="FieldLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CharacterSpacing" Value="0.8" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Text2}" />
+    </Style>
+
+    <Style x:Key="FormEntry" TargetType="Entry">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="TextColor" Value="{StaticResource Text}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Text3}" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style x:Key="FormEditor" TargetType="Editor">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="TextColor" Value="{StaticResource Text}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Text3}" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style x:Key="FormPicker" TargetType="Picker">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="TextColor" Value="{StaticResource Text}" />
+        <Setter Property="TitleColor" Value="{StaticResource Text3}" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <!-- Buttons -->
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="HeightRequest" Value="46" />
+    </Style>
+
+    <Style x:Key="GhostButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface2}" />
+        <Setter Property="TextColor" Value="{StaticResource Text}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="HeightRequest" Value="46" />
+    </Style>
+
+    <Style x:Key="DangerButtonSmall" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HeightRequest" Value="28" />
+    </Style>
+
+</ResourceDictionary>

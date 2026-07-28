@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Tabs are built in code (AppShell.xaml.cs) rather than declared here,
+    because which modules a company gets is data — company.enabledModules —
+    not a compile-time decision.
+-->
+<Shell
+    x:Class="BigLocalHub.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:BigLocalHub"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="{StaticResource Surface}"
+    Shell.TabBarForegroundColor="{StaticResource Accent}"
+    Shell.TabBarUnselectedColor="{StaticResource Text3}"
+    Shell.TabBarTitleColor="{StaticResource Accent}"
+    Shell.BackgroundColor="{StaticResource Surface}"
+    Shell.ForegroundColor="{StaticResource Text}"
+    Shell.TitleColor="{StaticResource Text}" />

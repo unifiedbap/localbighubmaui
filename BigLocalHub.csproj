@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- iOS + Android only. Mac Catalyst / Windows are deliberately absent:
+		     Plugin.Firebase wraps the native iOS/Android Firebase SDKs and has no
+		     implementation for those targets, so listing them would only produce
+		     build targets that cannot actually reach Firebase. -->
+		<TargetFrameworks>net10.0-ios;net10.0-android</TargetFrameworks>
+
+		<OutputType>Exe</OutputType>
+		<RootNamespace>BigLocalHub</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+
+		<!-- Display name -->
+		<ApplicationTitle>Big Local Hub</ApplicationTitle>
+
+		<!-- App Identifier — intentionally the SAME id as the Expo app
+		     (northstarapp/apps/mobile), so this project can reuse that app's
+		     existing GoogleService-Info.plist without registering a second iOS
+		     app in the Firebase console. Trade-off: the two builds cannot be
+		     installed side by side on one device. To run them together, change
+		     this to e.g. com.biglocalideas.biglocal.maui, register that bundle
+		     id in Firebase, and drop in the new plist. -->
+		<ApplicationId>com.biglocalideas.biglocal</ApplicationId>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0F77E6" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0F77E6" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Plugin.Firebase.Auth" Version="5.0.1" />
+		<PackageReference Include="Plugin.Firebase.Firestore" Version="4.0.0" />
+	</ItemGroup>
+
+	<!-- FirebaseSessions (pulled in by Auth/Firestore) links against
+	     FirebaseInstallations, but no Plugin.Firebase package depends on the
+	     Installations binding, so its .framework never lands in the app bundle
+	     and the app dies at launch with:
+	         dyld: Library not loaded: @rpath/FirebaseInstallations.framework
+	     Referencing it directly is what copies the framework in. Version is
+	     pinned to 12.5.0.4 to match the other AdamE.Firebase.iOS.* bindings
+	     already in the graph — mixing native Firebase SDK versions is its own
+	     class of link-time failure. -->
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<PackageReference Include="AdamE.Firebase.iOS.Installations" Version="12.5.0.4" />
+	</ItemGroup>
+
+	<!-- Native Firebase config. The iOS plist is copied from the Expo app and
+	     matches ApplicationId above. Android has no google-services.json yet
+	     (no Android app is registered in the Firebase console), so the Android
+	     target builds but cannot reach Firebase until that file is added. -->
+	<!-- Forward slashes deliberately: MSBuild normalizes them inside Include,
+	     but the Exists() function does NOT translate backslashes on macOS, so
+	     the Windows-style path silently evaluated false here and the plist was
+	     left out of the bundle — which surfaces only at runtime as
+	     "FirebaseApp.configure() could not find a valid GoogleService-Info.plist".
+	     Link puts it at the bundle root, where the Firebase SDK looks. -->
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<BundleResource Include="Platforms/iOS/GoogleService-Info.plist"
+		                Link="GoogleService-Info.plist"
+		                Condition="Exists('Platforms/iOS/GoogleService-Info.plist')" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<GoogleServicesJson Include="Platforms/Android/google-services.json"
+		                    Condition="Exists('Platforms/Android/google-services.json')" />
+	</ItemGroup>
+
+</Project>
