@@ -20,39 +20,6 @@ public partial class MoreViewModel : ObservableObject
 {
     private readonly SessionService _session;
 
-    /// <summary>Modules with a real page in this client.</summary>
-    private static readonly HashSet<string> Implemented =
-        [Modules.Dashboard, Modules.Leads];
-
-    /// <summary>
-    /// Icon per module. Every module in Modules.All has an entry so a newly
-    /// enabled module can never render as a blank tile.
-    /// </summary>
-    private static readonly Dictionary<string, string> Icons = new()
-    {
-        [Modules.Dashboard] = "icon_dashboard.png",
-        [Modules.Calendar]  = "icon_calendar.png",
-        [Modules.Leads]     = "icon_leads.png",
-        [Modules.Jobs]      = "icon_jobs.png",
-        [Modules.Clients]   = "icon_clients.png",
-        [Modules.Gc]        = "icon_gc.png",
-        [Modules.Marketing] = "icon_marketing.png",
-        [Modules.Crm]       = "icon_crm.png",
-        [Modules.Time]      = "icon_time.png",
-        [Modules.Money]     = "icon_money.png",
-        [Modules.Bids]      = "icon_bids.png",
-        [Modules.Expenses]  = "icon_expenses.png",
-        [Modules.Portal]    = "icon_portal.png",
-        [Modules.Agenda]    = "icon_agenda.png",
-    };
-
-    /// <summary>Shell route for the modules that have one.</summary>
-    private static readonly Dictionary<string, string> Routes = new()
-    {
-        [Modules.Dashboard] = "//dashboard",
-        [Modules.Leads]     = "//leads",
-    };
-
     public MoreViewModel(SessionService session)
     {
         _session = session;
@@ -79,15 +46,18 @@ public partial class MoreViewModel : ObservableObject
         var style = StageLabels.PipelineStyleFor(_session.Company);
         PipelineStyle = StageLabels.PipelineStyleLabels.TryGetValue(style, out var l) ? l : style;
 
+        // Icons, routes, and availability all come from ModuleRegistry, so a
+        // module added there shows up here without another table to update.
         Tiles.Clear();
-        foreach (var m in _session.EnabledModules)
+        foreach (var key in _session.EnabledModules)
         {
-            var available = Implemented.Contains(m);
+            var m = ModuleRegistry.Get(key);
+            var available = m.Implemented && m.Route.Length > 0;
             Tiles.Add(new ModuleTile(
-                Modules.Label(m),
-                Icons.TryGetValue(m, out var icon) ? icon : "icon_more.png",
+                m.Label,
+                m.Icon,
                 available,
-                available && Routes.TryGetValue(m, out var r) ? r : string.Empty,
+                available ? m.Route : string.Empty,
                 available ? string.Empty : "Web only for now",
                 // Unavailable tiles are dimmed via color rather than opacity so
                 // the label still clears the contrast floor.

@@ -110,3 +110,46 @@ public static class UserRoles
     public const string Admin = "admin";
     public const string User  = "user";
 }
+
+/// <summary>
+/// Agenda task statuses. Stored lowercase with underscores ('in_progress'),
+/// unlike lead/job statuses which are stored title-case — that inconsistency
+/// is in the existing data, so it is mirrored rather than "fixed" here.
+/// </summary>
+public static class TaskStatuses
+{
+    public const string Todo       = "todo";
+    public const string InProgress = "in_progress";
+    public const string Done       = "done";
+
+    public static readonly string[] All = [Todo, InProgress, Done];
+
+    public static readonly IReadOnlyDictionary<string, string> Labels = new Dictionary<string, string>
+    {
+        [Todo]       = "To Do",
+        [InProgress] = "In Progress",
+        [Done]       = "Done",
+    };
+
+    public static string Label(string status) =>
+        Labels.TryGetValue(status, out var l) ? l : status;
+}
+
+public static class TaskPriorities
+{
+    public const string Low    = "low";
+    public const string Medium = "medium";
+    public const string High   = "high";
+
+    public static readonly string[] All = [High, Medium, Low];
+
+    public static readonly IReadOnlyDictionary<string, string> Labels = new Dictionary<string, string>
+    {
+        [Low]    = "Low",
+        [Medium] = "Medium",
+        [High]   = "High",
+    };
+
+    public static string Label(string p) =>
+        Labels.TryGetValue(p, out var l) ? l : p;
+}

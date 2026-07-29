@@ -129,11 +129,102 @@ public class Job : FirestoreDocument
     [FirestoreProperty("clientName")]
     public string ClientName { get; set; } = string.Empty;
 
+    [FirestoreProperty("clientPhone")]
+    public string ClientPhone { get; set; } = string.Empty;
+
+    [FirestoreProperty("jobAddress")]
+    public string JobAddress { get; set; } = string.Empty;
+
     [FirestoreProperty("serviceType")]
     public string ServiceType { get; set; } = string.Empty;
 
     [FirestoreProperty("status")]
     public string Status { get; set; } = JobStatuses.Scheduled;
+
+    // All dates below are plain "yyyy-MM-dd" strings, and times "HH:mm" —
+    // never Firestore Timestamps. The web Calendar derives its events from
+    // these same fields.
+    [FirestoreProperty("startDate")]
+    public string StartDate { get; set; } = string.Empty;
+
+    [FirestoreProperty("endDate")]
+    public string EndDate { get; set; } = string.Empty;
+
+    [FirestoreProperty("quoteDate")]
+    public string QuoteDate { get; set; } = string.Empty;
+
+    [FirestoreProperty("quoteTime")]
+    public string QuoteTime { get; set; } = string.Empty;
+
+    [FirestoreProperty("notes")]
+    public string Notes { get; set; } = string.Empty;
+}
+
+public class TimeEntry : FirestoreDocument
+{
+    [FirestoreProperty("employeeId")]
+    public string EmployeeId { get; set; } = string.Empty;
+
+    [FirestoreProperty("employeeName")]
+    public string EmployeeName { get; set; } = string.Empty;
+
+    /// <summary>"yyyy-MM-dd".</summary>
+    [FirestoreProperty("date")]
+    public string Date { get; set; } = string.Empty;
+
+    /// <summary>"HH:mm".</summary>
+    [FirestoreProperty("startTime")]
+    public string StartTime { get; set; } = string.Empty;
+
+    [FirestoreProperty("endTime")]
+    public string EndTime { get; set; } = string.Empty;
+
+    /// <summary>Computed from start/end by whichever client wrote the entry.</summary>
+    [FirestoreProperty("hours")]
+    public double Hours { get; set; }
+
+    [FirestoreProperty("notes")]
+    public string Notes { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// An Agenda task. Named AgendaTask rather than Task to avoid colliding with
+/// System.Threading.Tasks.Task in every file that touches it.
+/// </summary>
+public class AgendaTask : FirestoreDocument
+{
+    [FirestoreProperty("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [FirestoreProperty("notes")]
+    public string Notes { get; set; } = string.Empty;
+
+    [FirestoreProperty("status")]
+    public string Status { get; set; } = TaskStatuses.Todo;
+
+    /// <summary>Freeform and user-defined — deliberately not an enum.</summary>
+    [FirestoreProperty("category")]
+    public string Category { get; set; } = string.Empty;
+
+    /// <summary>"yyyy-MM-dd", or empty when unset.</summary>
+    [FirestoreProperty("dueDate")]
+    public string DueDate { get; set; } = string.Empty;
+
+    [FirestoreProperty("priority")]
+    public string Priority { get; set; } = TaskPriorities.Medium;
+
+    /// <summary>companies/{id}/employees id, empty when unassigned.</summary>
+    [FirestoreProperty("assignedTo")]
+    public string AssignedTo { get; set; } = string.Empty;
+}
+
+public class Employee : FirestoreDocument
+{
+    [FirestoreProperty("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [FirestoreProperty("role")]
+    public string? Role { get; set; }
 }
 
 public class Client : FirestoreDocument

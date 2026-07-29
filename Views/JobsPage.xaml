@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.JobsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:JobsViewModel"
+    Title="Jobs"
+    BackgroundColor="{StaticResource ColorPageBg}">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Padding="16,12,16,4">
+            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Filters}" Spacing="{StaticResource Space2}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FilterChip">
+                        <Border BackgroundColor="{Binding Background}" Stroke="{Binding BorderColor}"
+                                StrokeThickness="1.5" StrokeShape="RoundRectangle 22" Padding="16,0"
+                                MinimumHeightRequest="{StaticResource TouchTarget}" HeightRequest="44">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:JobsViewModel}}, Path=SelectFilterCommand}"
+                                    CommandParameter="{Binding Value}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding Label}" TextColor="{Binding TextColor}"
+                                   FontAttributes="{Binding Weight}" VerticalOptions="Center" />
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="1" Padding="16,4,16,8" Spacing="{StaticResource Space2}">
+            <Label Text="{Binding ResultSummary}" Style="{StaticResource TextSectionLabel}" />
+            <Border IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                    BackgroundColor="{StaticResource ColorDangerTint}" Stroke="{StaticResource ColorDanger}"
+                    StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+            </Border>
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="2" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Jobs}">
+                <CollectionView.EmptyView>
+                    <Label Text="{Binding EmptyMessage}" Style="{StaticResource TextMuted}"
+                           Padding="32" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:JobListItem">
+                        <Border Style="{StaticResource Card}" Margin="16,0" MinimumHeightRequest="{StaticResource TouchTarget}">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                                    <Label Text="{Binding Name}" Style="{StaticResource TextCardPrimary}" />
+                                    <Label Text="{Binding Details}" Style="{StaticResource TextCardSecondary}" />
+                                    <Label Text="{Binding Schedule}" Style="{StaticResource TextCardSecondary}"
+                                           TextColor="{StaticResource ColorTextTertiary}" />
+                                </VerticalStackLayout>
+                                <Border Grid.Column="1" BackgroundColor="{Binding StatusTint}" StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Center">
+                                    <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeLabel}" TextColor="{Binding StatusInk}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

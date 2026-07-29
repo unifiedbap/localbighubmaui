@@ -28,5 +28,9 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Big Local Hub adds your upcoming jobs and quote appointments to your calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Big Local Hub adds your upcoming jobs and quote appointments to your calendar, and checks for ones it already added so it doesn't create duplicates.</string>
 </dict>
 </plist>

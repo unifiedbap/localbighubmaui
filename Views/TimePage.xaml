@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.TimePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:TimeViewModel"
+    Title="Time"
+    BackgroundColor="{StaticResource ColorPageBg}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource Space5}">
+
+            <Border IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                    BackgroundColor="{StaticResource ColorDangerTint}" Stroke="{StaticResource ColorDanger}"
+                    StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="{StaticResource Space3}">
+                <Border Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="{Binding WeekSummary}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
+                        <Label Text="Last 7 days" Style="{StaticResource TextCardSecondary}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="{Binding TotalSummary}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
+                        <Label Text="All time" Style="{StaticResource TextCardSecondary}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Label Text="No time entries yet." Style="{StaticResource TextMuted}" IsVisible="{Binding IsEmpty}" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Days}" Spacing="{StaticResource Space4}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TimeDayGroup">
+                        <VerticalStackLayout Spacing="{StaticResource Space2}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="{Binding DateLabel}" Style="{StaticResource TextSectionLabel}" />
+                                <Label Grid.Column="1" Text="{Binding DayTotal}" Style="{StaticResource TextSectionLabel}"
+                                       TextColor="{StaticResource ColorAccent}" />
+                            </Grid>
+
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}" Spacing="{StaticResource Space2}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TimeRow">
+                                        <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                                                    <Label Text="{Binding EmployeeName}" Style="{StaticResource TextCardPrimary}" />
+                                                    <Label Text="{Binding TimeRange}" Style="{StaticResource TextCardSecondary}" />
+                                                    <Label Text="{Binding Notes}" Style="{StaticResource TextCardSecondary}"
+                                                           TextColor="{StaticResource ColorTextTertiary}"
+                                                           IsVisible="{Binding Notes, Converter={StaticResource IsNotNullOrEmpty}}" />
+                                                </VerticalStackLayout>
+                                                <Border Grid.Column="1" BackgroundColor="{StaticResource ColorAccentTint}" StrokeThickness="0"
+                                                        StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Center">
+                                                    <Label Text="{Binding Hours}" Style="{StaticResource BadgeLabel}" TextColor="{StaticResource ColorAccent}" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="72" Color="Transparent" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

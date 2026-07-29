@@ -8,9 +8,10 @@ mobile app, and a shared `packages/core`.
 This project talks to **the same Firebase project** (`big-local-ideas`) and the
 same Firestore documents. It is not a fork of the data, just a second client.
 
-**Status: walking skeleton + design system.** Auth, company/module gating,
-Dashboard, and Leads work end to end, all on the shared token system described
-below. The other ten modules are not built yet.
+**Status.** Auth, company/module gating, Dashboard, Leads, Jobs, Time,
+Calendar, and Agenda all work end to end on the shared token system described
+below. Apple Calendar sync works today; Google Calendar needs a one-time OAuth
+client id (see below). Six modules remain unported.
 
 ---
 
@@ -23,16 +24,77 @@ below. The other ten modules are not built yet.
 | `Services/StageLabels.cs` | `packages/core/stageLabels.ts` | Per-company pipeline wording |
 | `Services/SessionService.cs` | `packages/core/auth.tsx` | Auth state machine |
 | `Services/FirestoreRepository.cs` | `packages/core/hooks.ts` | `useCollection` equivalent |
-| `Views/DashboardPage.xaml` | `apps/web/src/pages/Dashboard.tsx` | Stat tiles + recent lists |
+| `Views/DashboardPage.xaml` | `apps/web/src/pages/Dashboard.tsx` | Needs-action list, Quick Actions, counts |
 | `Views/LeadsPage.xaml` | `apps/web/src/pages/Leads.tsx` | List, filters, add/edit/delete |
+| `Views/JobsPage.xaml` | `apps/web/src/pages/Jobs.tsx` | List + status filters (read-only) |
+| `Views/TimePage.xaml` | `apps/web/src/pages/Time.tsx` | Entries grouped by day (read-only) |
+| `Views/AgendaPage.xaml` | `apps/web/src/pages/Agenda.tsx` | Tasks + inline done/reopen |
+| `Views/CalendarPage.xaml` | `apps/web/src/pages/Calendar.tsx` | Upcoming agenda + external sync |
+| `Services/ModuleRegistry.cs` | — | Label/icon/route for every module, in one place |
 
 ### Not ported yet
 
-Calendar, Jobs, Clients, GC & Contractors, Marketing, Cold Call CRM, Time,
-Money, Bids, Expenses, Customer Portal, Agenda — plus, within Leads, the
-spreadsheet import flow, the cold-call cadence engine, and lead→client→job
-conversion. The **More** tab lists the company's enabled modules and marks
-which ones this build actually implements.
+Clients, GC & Contractors, Marketing, Cold Call CRM, Money, Bids, Expenses,
+Customer Portal — plus, within Leads, the spreadsheet import flow, the
+cold-call cadence engine, and lead→client→job conversion. Jobs and Time are
+read-only for now. The **More** tab lists the company's enabled modules and
+marks which ones this build actually implements.
+
+## Quick Actions
+
+The Dashboard's four shortcut tiles. Defaults are Jobs / Time / Calendar /
+Agenda; tapping **Edit** lets each user pick their own four from whatever their
+company has enabled and this client implements.
+
+The choice is stored in device-local `Preferences`, **not** on `/users/{uid}` —
+that document's Firestore rule only permits a teammate to write `notifyPrefs`,
+`phone`, `fcmTokens`, and `updatedAt`, so a `quickActions` field would be
+rejected with permission-denied. To make the preference follow a user between
+devices: add `quickActions` to `touchesOnlyNotifyFields()` in `firestore.rules`,
+deploy, then swap the two methods in `Services/UserPreferences.cs` for a
+Firestore read/write. Nothing else has to change.
+
+## Calendar sync
+
+Events are derived from Jobs exactly as the web Calendar does — a job's
+`quoteDate` becomes a quote appointment, its `startDate` a job start. There is
+no separate events collection. Only **future** events are pushed; back-filling
+years of finished work into someone's personal calendar isn't what "sync"
+means to them and is hard to undo.
+
+Re-syncing is idempotent. Google gets an app-defined event id derived from the
+source doc, so a repeat sync is a PUT rather than a duplicate. EventKit has no
+custom-field search, so the source id is written into the event notes and
+matched over its own date window.
+
+### Apple Calendar — works now
+
+Uses EventKit against the device's own calendar store (including any iCloud or
+Exchange accounts the user has added). No OAuth, no network, works offline.
+`NSCalendarsUsageDescription` and `NSCalendarsFullAccessUsageDescription` are
+already in `Platforms/iOS/Info.plist` — without them iOS terminates the app on
+the first EventKit call rather than returning an error.
+
+### Google Calendar — needs a one-time setup
+
+The full OAuth 2.0 + PKCE flow and Calendar API v3 calls are implemented in
+`Services/Calendar/GoogleCalendarBridge.cs`. What's missing is a credential
+that can only be created in your Google Cloud console:
+
+1. In the Google Cloud console for the `big-local-ideas` project, enable the
+   **Google Calendar API**.
+2. Create an **OAuth 2.0 Client ID** of type **iOS**, with bundle id
+   `com.biglocalideas.biglocal`.
+3. Put the client id in `GoogleCalendarConfig.ClientId`.
+4. Add the **reversed** client id (e.g.
+   `com.googleusercontent.apps.1234567890-abcdefg`) as a `CFBundleURLScheme`
+   in `Platforms/iOS/Info.plist`, so the OAuth redirect can return to the app.
+
+Until step 3 is done the bridge reports `NotConfigured` and the Calendar screen
+says "Setup needed" rather than dropping the user into an auth screen that
+can't succeed. The client id is not a secret — installed apps get no client
+secret, and security comes from PKCE plus the registered redirect URI — so it
+is fine to commit.
 
 ---
 

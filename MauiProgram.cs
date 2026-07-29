@@ -1,4 +1,5 @@
 using BigLocalHub.Services;
+using BigLocalHub.Services.Calendar;
 using BigLocalHub.ViewModels;
 using BigLocalHub.Views;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,14 @@ public static class MauiProgram
         // Singleton: one session for the whole app, same as the single React
         // context provider at the root of the web and Expo trees.
         builder.Services.AddSingleton<SessionService>();
+        builder.Services.AddSingleton<UserPreferences>();
+
+        // ── Calendar bridges ────────────────────────────────────────────────
+        // Registered as a collection so CalendarViewModel takes
+        // IEnumerable<ICalendarBridge> and a third provider slots in without
+        // touching the view model.
+        builder.Services.AddSingleton<ICalendarBridge, AppleCalendarBridge>();
+        builder.Services.AddSingleton<ICalendarBridge, GoogleCalendarBridge>();
 
         // ── View models ─────────────────────────────────────────────────────
         // Transient so a page rebuilt after sign-out gets clean state and fresh
@@ -41,19 +50,38 @@ public static class MauiProgram
         builder.Services.AddTransient<DashboardViewModel>();
         builder.Services.AddTransient<LeadsViewModel>();
         builder.Services.AddTransient<MoreViewModel>();
+        builder.Services.AddTransient<JobsViewModel>();
+        builder.Services.AddTransient<TimeViewModel>();
+        builder.Services.AddTransient<AgendaViewModel>();
+        builder.Services.AddTransient<CalendarViewModel>();
 
         // ── Pages ───────────────────────────────────────────────────────────
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<DashboardPage>();
         builder.Services.AddTransient<LeadsPage>();
         builder.Services.AddTransient<MorePage>();
+        builder.Services.AddTransient<JobsPage>();
+        builder.Services.AddTransient<TimePage>();
+        builder.Services.AddTransient<AgendaPage>();
+        builder.Services.AddTransient<CalendarPage>();
         builder.Services.AddTransient<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+
+        // Push-navigation routes for the modules that aren't bottom tabs. They
+        // resolve through DI (see DiRouteFactory) and are pushed rather than
+        // switched to, so they get a back button to wherever the user came
+        // from — Dashboard's Quick Actions or the More launcher.
+        Routing.RegisterRoute("jobs",     new DiRouteFactory(app.Services, typeof(JobsPage)));
+        Routing.RegisterRoute("time",     new DiRouteFactory(app.Services, typeof(TimePage)));
+        Routing.RegisterRoute("agenda",   new DiRouteFactory(app.Services, typeof(AgendaPage)));
+        Routing.RegisterRoute("calendar", new DiRouteFactory(app.Services, typeof(CalendarPage)));
+
+        return app;
     }
 
     /// <summary>

@@ -132,38 +132,85 @@
                 </VerticalStackLayout>
             </VerticalStackLayout>
 
+            <!-- ── Quick Actions — user-customizable shortcuts ────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}" IsVisible="{Binding IsLoading, Converter={StaticResource InverseBool}}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" Text="QUICK ACTIONS" Style="{StaticResource TextSectionLabel}" VerticalOptions="Center" />
+                    <Button Grid.Column="1" Text="Edit" Command="{Binding ToggleCustomizingCommand}"
+                            IsVisible="{Binding IsCustomizing, Converter={StaticResource InverseBool}}"
+                            Style="{StaticResource ButtonLink}" />
+                    <Button Grid.Column="1" Text="Done" Command="{Binding ToggleCustomizingCommand}"
+                            IsVisible="{Binding IsCustomizing}"
+                            Style="{StaticResource ButtonLink}" />
+                </Grid>
+
+                <!-- Normal state: four big icon + label targets -->
+                <Grid IsVisible="{Binding IsCustomizing, Converter={StaticResource InverseBool}}">
+                    <FlexLayout BindableLayout.ItemsSource="{Binding QuickActions}" Wrap="Wrap" JustifyContent="SpaceBetween">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:QuickAction">
+                                <Border Style="{StaticResource Card}" WidthRequest="168" MinimumHeightRequest="96" Margin="0,0,0,12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=OpenQuickActionCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="{StaticResource Space2}" VerticalOptions="Center">
+                                        <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" HorizontalOptions="Start" />
+                                        <Label Text="{Binding Label}" Style="{StaticResource TextCardPrimary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </Grid>
+
+                <!-- Edit state: pick which modules occupy the four slots -->
+                <VerticalStackLayout IsVisible="{Binding IsCustomizing}" Spacing="{StaticResource Space3}">
+                    <Label Text="{Binding CustomizeHint}" Style="{StaticResource TextCardSecondary}" />
+
+                    <FlexLayout BindableLayout.ItemsSource="{Binding QuickActionChoices}" Wrap="Wrap" JustifyContent="Start">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:QuickActionChoice">
+                                <Border BackgroundColor="{Binding Background}" Stroke="{Binding BorderColor}"
+                                        StrokeThickness="1.5" StrokeShape="RoundRectangle 12"
+                                        Padding="{StaticResource Space3}" Margin="0,0,10,10"
+                                        WidthRequest="104" MinimumHeightRequest="96">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=ToggleQuickActionCommand}"
+                                            CommandParameter="{Binding Key}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="{StaticResource Space2}" VerticalOptions="Center">
+                                        <Image Source="{Binding Icon}" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" />
+                                        <Label Text="{Binding Label}" TextColor="{Binding TextColor}"
+                                               FontSize="{StaticResource FontLabel}" FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+
+                    <Button Text="Reset to default" Command="{Binding ResetQuickActionsCommand}" Style="{StaticResource ButtonSecondary}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
             <!-- ── Overview counts ────────────────────────────────────────── -->
             <VerticalStackLayout Spacing="{StaticResource Space3}" IsVisible="{Binding IsLoading, Converter={StaticResource InverseBool}}">
                 <Label Text="OVERVIEW" Style="{StaticResource TextSectionLabel}" />
 
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
-                      ColumnSpacing="{StaticResource Space3}" RowSpacing="{StaticResource Space3}">
-
-                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="{StaticResource Space3}">
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
                         <VerticalStackLayout Spacing="{StaticResource Space1}">
                             <Label Text="{Binding OpenLeads}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
                             <Label Text="Open leads" Style="{StaticResource TextCardSecondary}" />
                         </VerticalStackLayout>
                     </Border>
-
-                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
                         <VerticalStackLayout Spacing="{StaticResource Space1}">
                             <Label Text="{Binding ActiveJobs}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
                             <Label Text="Active jobs" Style="{StaticResource TextCardSecondary}" />
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
-                        <VerticalStackLayout Spacing="{StaticResource Space1}">
-                            <Label Text="{Binding TotalClients}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
-                            <Label Text="Clients" Style="{StaticResource TextCardSecondary}" />
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
-                        <VerticalStackLayout Spacing="{StaticResource Space1}">
-                            <Label Text="{Binding TotalLeads}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
-                            <Label Text="Total leads" Style="{StaticResource TextCardSecondary}" />
                         </VerticalStackLayout>
                     </Border>
                 </Grid>

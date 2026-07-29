@@ -35,10 +35,105 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     /// </summary>
     private const int OverdueAfterDays = 3;
 
-    public DashboardViewModel(SessionService session, FirestoreRepository repo)
+    private readonly UserPreferences _prefs;
+
+    public DashboardViewModel(SessionService session, FirestoreRepository repo, UserPreferences prefs)
     {
         _session = session;
         _repo = repo;
+        _prefs = prefs;
+    }
+
+    /// <summary>
+    /// The four customizable shortcut tiles. Defaults to Jobs / Time /
+    /// Calendar / Agenda and is overridable per user — see UserPreferences for
+    /// why the choice is stored on the device rather than on the user doc.
+    /// </summary>
+    public ObservableCollection<QuickAction> QuickActions { get; } = [];
+
+    /// <summary>Every module that could occupy a slot, with its current on/off state.</summary>
+    public ObservableCollection<QuickActionChoice> QuickActionChoices { get; } = [];
+
+    [ObservableProperty] private bool _isCustomizing;
+    [ObservableProperty] private string _customizeHint = string.Empty;
+
+    private string Uid => _session.FirebaseUser?.Uid ?? "anon";
+
+    private void BuildQuickActions()
+    {
+        var chosen = _prefs.GetQuickActions(Uid, _session.EnabledModules);
+
+        QuickActions.Clear();
+        foreach (var key in chosen)
+        {
+            var m = ModuleRegistry.Get(key);
+            QuickActions.Add(new QuickAction(m.Key, m.Label, m.Icon, m.Route));
+        }
+
+        BuildChoices(chosen);
+    }
+
+    private void BuildChoices(IReadOnlyList<string> chosen)
+    {
+        QuickActionChoices.Clear();
+        foreach (var m in ModuleRegistry.AvailableFor(_session.EnabledModules))
+        {
+            var on = chosen.Contains(m.Key);
+            QuickActionChoices.Add(new QuickActionChoice(
+                m.Key, m.Label, m.Icon, on,
+                on ? Tokens.Palette.AccentTint : Tokens.Palette.Surface,
+                on ? Tokens.Palette.Accent : Tokens.Palette.BorderStrong,
+                on ? Tokens.Palette.Accent : Tokens.Palette.TextSecondary));
+        }
+
+        CustomizeHint = $"Pick up to {UserPreferences.SlotCount}. Tap to add or remove.";
+    }
+
+    [RelayCommand]
+    private void ToggleCustomizing()
+    {
+        IsCustomizing = !IsCustomizing;
+        if (IsCustomizing) BuildChoices(QuickActions.Select(q => q.Key).ToList());
+    }
+
+    /// <summary>
+    /// Adds or removes a module from the grid. When all four slots are full,
+    /// the oldest choice is dropped rather than silently ignoring the tap —
+    /// a tile that does nothing reads as a bug.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleQuickAction(string key)
+    {
+        var current = QuickActions.Select(q => q.Key).ToList();
+
+        if (current.Contains(key))
+        {
+            // Never empty the grid completely.
+            if (current.Count <= 1) return;
+            current.Remove(key);
+        }
+        else
+        {
+            if (current.Count >= UserPreferences.SlotCount) current.RemoveAt(0);
+            current.Add(key);
+        }
+
+        _prefs.SetQuickActions(Uid, current);
+        BuildQuickActions();
+    }
+
+    [RelayCommand]
+    private void ResetQuickActions()
+    {
+        _prefs.ResetQuickActions(Uid);
+        BuildQuickActions();
+    }
+
+    [RelayCommand]
+    private static async Task OpenQuickActionAsync(QuickAction action)
+    {
+        if (string.IsNullOrEmpty(action.Route)) return;
+        await Shell.Current.GoToAsync(action.Route);
     }
 
     [ObservableProperty] private string _greeting = string.Empty;
@@ -63,6 +158,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         Greeting = GreetingForHour(DateTime.Now.Hour);
         CompanyName = _session.Company?.Name ?? string.Empty;
         IsDemo = _session.Company?.Demo ?? false;
+
+        BuildQuickActions();
 
         var companyId = _session.CompanyId;
         if (string.IsNullOrWhiteSpace(companyId))
@@ -255,3 +352,14 @@ public record LeadRow(
     string StatusLabel,
     Color StatusInk,
     Color StatusTint);
+
+public record QuickAction(string Key, string Label, string Icon, string Route);
+
+public record QuickActionChoice(
+    string Key,
+    string Label,
+    string Icon,
+    bool IsSelected,
+    Color Background,
+    Color BorderColor,
+    Color TextColor);
