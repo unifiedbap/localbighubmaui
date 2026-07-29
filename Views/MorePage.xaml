@@ -108,6 +108,26 @@
                 </Border>
             </VerticalStackLayout>
 
+            <!-- ── Manager tools ──────────────────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}" IsVisible="{Binding IsManager}">
+                <Label Text="MANAGER" Style="{StaticResource TextSectionLabel}" />
+
+                <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenTeamCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="{StaticResource Space1}">
+                            <Label Text="Manage Team" Style="{StaticResource TextCardPrimary}" />
+                            <Label Text="Link logins to crew members so they can clock in"
+                                   Style="{StaticResource TextCaption}" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="›" FontSize="{StaticResource FontTitle}"
+                               TextColor="{StaticResource ColorAccent}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
             <!-- One primary action for this screen -->
             <Button Text="Sign Out" Command="{Binding SignOutCommand}" Style="{StaticResource ButtonSecondary}" />
 

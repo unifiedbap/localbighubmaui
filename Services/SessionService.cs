@@ -72,6 +72,19 @@ public class SessionService : INotifyPropertyChanged
     public bool    IsAdmin   => UserDoc?.IsAdmin ?? false;
     public bool    IsSignedIn => FirebaseUser is not null;
 
+    /// <summary>
+    /// Runs this company's crew. Absent companyRole reads as staff, so nobody
+    /// gains manager rights without an explicit grant.
+    ///
+    /// This gates UI only. The authoritative check has to live in
+    /// firestore.rules — a client-side flag is a convenience, not a security
+    /// boundary, and anything relying on it alone is bypassable.
+    /// </summary>
+    public bool IsManager => UserDoc?.IsManager ?? false;
+
+    /// <summary>Firebase Auth uid of the signed-in user, or null.</summary>
+    public string? Uid => FirebaseUser?.Uid;
+
     public IReadOnlyList<string> EnabledModules => Company?.EnabledModules ?? [];
 
     public bool HasModule(string module) => EnabledModules.Contains(module);

@@ -54,6 +54,7 @@ public static class MauiProgram
         builder.Services.AddTransient<TimeViewModel>();
         builder.Services.AddTransient<AgendaViewModel>();
         builder.Services.AddTransient<CalendarViewModel>();
+        builder.Services.AddTransient<TeamViewModel>();
 
         // ── Pages ───────────────────────────────────────────────────────────
         builder.Services.AddTransient<LoginPage>();
@@ -64,6 +65,7 @@ public static class MauiProgram
         builder.Services.AddTransient<TimePage>();
         builder.Services.AddTransient<AgendaPage>();
         builder.Services.AddTransient<CalendarPage>();
+        builder.Services.AddTransient<TeamPage>();
         builder.Services.AddTransient<AppShell>();
 
 #if DEBUG

@@ -70,6 +70,25 @@ public class FirestoreRepository
     }
 
     /// <summary>
+    /// One-shot equality query. Deliberately not ordered: adding an orderBy to
+    /// a where-clause needs a composite index, and this is used for small
+    /// result sets (a single company's users) where sorting client-side is
+    /// cheaper than maintaining one.
+    /// </summary>
+    public async Task<IReadOnlyList<T>> QueryAsync<T>(string collectionPath, string field, object value)
+        where T : FirestoreDocument
+    {
+        var snapshot = await _db.GetCollection(collectionPath)
+                                .WhereEqualsTo(field, value)
+                                .GetDocumentsAsync<T>();
+        return snapshot.Documents
+            .Select(d => d.Data)
+            .Where(d => d is not null)
+            .Select(d => d!)
+            .ToList();
+    }
+
+    /// <summary>
     /// Adds a document with a server-side createdAt, matching the hook's add().
     /// The timestamp has to be server-side: ordering depends on it, and a
     /// device clock that is even slightly off would sort the list wrong.

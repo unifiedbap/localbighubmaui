@@ -17,57 +17,143 @@
                 <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
             </Border>
 
+            <!-- ── Clock card — the one primary action on this screen ─────── -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="{StaticResource Space4}">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="{StaticResource Space1}">
+                            <Label Text="{Binding ClockStatus}" Style="{StaticResource TextHeading}" />
+                            <Label Text="{Binding ClockDetail}" Style="{StaticResource TextCardSecondary}" />
+                        </VerticalStackLayout>
+
+                        <!-- Running total, only while on the clock -->
+                        <Border Grid.Column="1" IsVisible="{Binding IsClockedIn}"
+                                BackgroundColor="{StaticResource ColorSuccessTint}" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 10" Padding="12,8" VerticalOptions="Center">
+                            <Label Text="{Binding Elapsed}" FontSize="{StaticResource FontHeading}"
+                                   FontAttributes="Bold" TextColor="{StaticResource ColorSuccess}" />
+                        </Border>
+                    </Grid>
+
+                    <Button Text="Clock In" Command="{Binding ClockInCommand}"
+                            IsVisible="{Binding ShowClockIn}"
+                            Style="{StaticResource ButtonPrimary}" />
+
+                    <Button Text="Clock Out" Command="{Binding ClockOutCommand}"
+                            IsVisible="{Binding IsClockedIn}"
+                            Style="{StaticResource ButtonPrimary}" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ── Totals ─────────────────────────────────────────────────── -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="{StaticResource Space3}">
                 <Border Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="{StaticResource Space1}">
-                        <Label Text="{Binding WeekSummary}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
+                        <Label Text="{Binding WeekTotal}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
                         <Label Text="Last 7 days" Style="{StaticResource TextCardSecondary}" />
                     </VerticalStackLayout>
                 </Border>
                 <Border Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="{StaticResource Space1}">
-                        <Label Text="{Binding TotalSummary}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
-                        <Label Text="All time" Style="{StaticResource TextCardSecondary}" />
+                        <Label Text="{Binding MonthTotal}" Style="{StaticResource TextDisplay}" TextColor="{StaticResource ColorAccent}" />
+                        <Label Text="This month" Style="{StaticResource TextCardSecondary}" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
 
-            <Label Text="No time entries yet." Style="{StaticResource TextMuted}" IsVisible="{Binding IsEmpty}" />
+            <!-- ── Month calendar ─────────────────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" Text="{Binding ScopeLabel}"
+                           Style="{StaticResource TextSectionLabel}" VerticalOptions="Center" />
+                    <!-- Managers can look at the whole crew; staff see only themselves -->
+                    <Button Grid.Column="1" Text="Switch" Command="{Binding ToggleScopeCommand}"
+                            IsVisible="{Binding CanSeeEveryone}" Style="{StaticResource ButtonLink}" />
+                </Grid>
 
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Days}" Spacing="{StaticResource Space4}">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="vm:TimeDayGroup">
-                        <VerticalStackLayout Spacing="{StaticResource Space2}">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Grid.Column="0" Text="{Binding DateLabel}" Style="{StaticResource TextSectionLabel}" />
-                                <Label Grid.Column="1" Text="{Binding DayTotal}" Style="{StaticResource TextSectionLabel}"
-                                       TextColor="{StaticResource ColorAccent}" />
-                            </Grid>
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="{StaticResource Space3}">
 
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}" Spacing="{StaticResource Space2}">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:TimeRow">
-                                        <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
-                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
-                                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="{StaticResource Space1}">
-                                                    <Label Text="{Binding EmployeeName}" Style="{StaticResource TextCardPrimary}" />
-                                                    <Label Text="{Binding TimeRange}" Style="{StaticResource TextCardSecondary}" />
-                                                    <Label Text="{Binding Notes}" Style="{StaticResource TextCardSecondary}"
-                                                           TextColor="{StaticResource ColorTextTertiary}"
-                                                           IsVisible="{Binding Notes, Converter={StaticResource IsNotNullOrEmpty}}" />
-                                                </VerticalStackLayout>
-                                                <Border Grid.Column="1" BackgroundColor="{StaticResource ColorAccentTint}" StrokeThickness="0"
-                                                        StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Center">
-                                                    <Label Text="{Binding Hours}" Style="{StaticResource BadgeLabel}" TextColor="{StaticResource ColorAccent}" />
-                                                </Border>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                        </VerticalStackLayout>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Button Grid.Column="0" Text="‹" Command="{Binding PreviousMonthCommand}"
+                                    Style="{StaticResource ButtonLink}" FontSize="{StaticResource FontTitle}" />
+                            <Label Grid.Column="1" Text="{Binding MonthLabel}" Style="{StaticResource TextHeading}"
+                                   HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            <Button Grid.Column="2" Text="›" Command="{Binding NextMonthCommand}"
+                                    Style="{StaticResource ButtonLink}" FontSize="{StaticResource FontTitle}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*,*,*,*,*,*">
+                            <Label Grid.Column="0" Text="S" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="1" Text="M" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="2" Text="T" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="3" Text="W" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="4" Text="T" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="5" Text="F" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="6" Text="S" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                        </Grid>
+
+                        <!-- Fixed height: six rows always, so the grid doesn't
+                             jump as months change length. -->
+                        <CollectionView ItemsSource="{Binding Cells}" HeightRequest="300">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="7" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CalendarCell">
+                                    <Border BackgroundColor="{Binding Background}" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8" Margin="1" Padding="0"
+                                            MinimumHeightRequest="44">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TimeViewModel}}, Path=SelectDayCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout VerticalOptions="Center" Spacing="0">
+                                            <Label Text="{Binding DayNumber}" TextColor="{Binding TextColor}"
+                                                   FontSize="{StaticResource FontLabel}" HorizontalTextAlignment="Center" />
+                                            <Label Text="{Binding HoursLabel}" TextColor="{Binding HoursColor}"
+                                                   IsVisible="{Binding HasHours}" FontSize="11"
+                                                   FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- ── Selected day ───────────────────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}" IsVisible="{Binding HasSelection}">
+                <Label Text="{Binding SelectedDayLabel}" Style="{StaticResource TextHeading}" />
+
+                <Label Text="No hours logged this day." Style="{StaticResource TextMuted}"
+                       IsVisible="{Binding SelectedDayEntries.Count, Converter={StaticResource IsZero}}" />
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedDayEntries}" Spacing="{StaticResource Space2}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TimeRow">
+                            <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                    <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                                        <Label Text="{Binding EmployeeName}" Style="{StaticResource TextCardPrimary}" />
+                                        <Label Text="{Binding TimeRange}" Style="{StaticResource TextCardSecondary}" />
+                                        <Label Text="{Binding Notes}" Style="{StaticResource TextCaption}"
+                                               IsVisible="{Binding Notes, Converter={StaticResource IsNotNullOrEmpty}}" />
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="1" BackgroundColor="{StaticResource ColorAccentTint}" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Center">
+                                        <Label Text="{Binding Hours}" Style="{StaticResource BadgeLabel}" TextColor="{StaticResource ColorAccent}" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <BoxView HeightRequest="72" Color="Transparent" />

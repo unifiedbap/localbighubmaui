@@ -32,6 +32,9 @@ public partial class MoreViewModel : ObservableObject
     [ObservableProperty] private string _roleLabel = string.Empty;
     [ObservableProperty] private string _pipelineStyle = string.Empty;
     [ObservableProperty] private string _initials = string.Empty;
+    /// <summary>Gates the Manage Team row. UI convenience only — the real
+    /// boundary is firestore.rules.</summary>
+    [ObservableProperty] private bool _isManager;
 
     public ObservableCollection<ModuleTile> Tiles { get; } = [];
 
@@ -40,7 +43,10 @@ public partial class MoreViewModel : ObservableObject
         CompanyName = _session.Company?.Name ?? "—";
         UserName = string.IsNullOrWhiteSpace(_session.UserDoc?.Name) ? "—" : _session.UserDoc!.Name;
         UserEmail = _session.UserDoc?.Email ?? _session.FirebaseUser?.Email ?? "—";
-        RoleLabel = _session.IsAdmin ? "Platform admin" : "Team member";
+        RoleLabel = _session.IsAdmin
+            ? "Platform admin"
+            : CompanyRoles.Label(_session.UserDoc?.CompanyRole);
+        IsManager = _session.IsManager;
         Initials = MakeInitials(UserName, UserEmail);
 
         var style = StageLabels.PipelineStyleFor(_session.Company);
@@ -89,6 +95,11 @@ public partial class MoreViewModel : ObservableObject
         }
         if (AppShell.Instance is { } shell) await shell.ShowModuleAsync(tile.Key);
     }
+
+    [RelayCommand]
+    private static async Task OpenTeamAsync() =>
+        await Shell.Current.Navigation.PushAsync(
+            (Page)Application.Current!.Handler!.MauiContext!.Services.GetRequiredService<Views.TeamPage>());
 
     [RelayCommand]
     private async Task SignOutAsync()

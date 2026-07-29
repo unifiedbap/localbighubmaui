@@ -38,6 +38,15 @@ public class UserDoc : FirestoreDocument
     [FirestoreProperty("role")]
     public string Role { get; set; } = UserRoles.User;
 
+    /// <summary>
+    /// 'manager' or 'staff'. Absent reads as staff — see CompanyRoles for why
+    /// this is separate from Role.
+    /// </summary>
+    [FirestoreProperty("companyRole")]
+    public string? CompanyRole { get; set; }
+
+    public bool IsManager => CompanyRole == CompanyRoles.Manager;
+
     /// <summary>True for the shared live-demo sandbox account (createDemoSession).</summary>
     [FirestoreProperty("demo")]
     public bool Demo { get; set; }
@@ -218,6 +227,16 @@ public class AgendaTask : FirestoreDocument
     public string AssignedTo { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// A company's crew member. Historically free text — a name someone typed —
+/// which is why Uid is optional: existing employee records have no login
+/// attached, and dropping them would break the web Time page and the
+/// QuickBooks payroll export (which matches on QbName).
+///
+/// Uid links the record to /users/{uid}. Only a linked employee can clock
+/// themselves in, because that is the only case where the app can prove whose
+/// shift it is.
+/// </summary>
 public class Employee : FirestoreDocument
 {
     [FirestoreProperty("name")]
@@ -225,6 +244,20 @@ public class Employee : FirestoreDocument
 
     [FirestoreProperty("role")]
     public string? Role { get; set; }
+
+    /// <summary>Firebase Auth uid of the linked user, or null if unlinked.</summary>
+    [FirestoreProperty("uid")]
+    public string? Uid { get; set; }
+
+    /// <summary>Denormalized from the linked user, so the roster reads without an extra lookup.</summary>
+    [FirestoreProperty("email")]
+    public string? Email { get; set; }
+
+    /// <summary>Exact name in QuickBooks, for the web app's payroll export match.</summary>
+    [FirestoreProperty("qbName")]
+    public string? QbName { get; set; }
+
+    public bool IsLinked => !string.IsNullOrWhiteSpace(Uid);
 }
 
 public class Client : FirestoreDocument

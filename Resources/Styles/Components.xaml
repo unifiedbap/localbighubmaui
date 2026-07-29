@@ -76,6 +76,22 @@
         <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
         <Setter Property="HeightRequest" Value="50" />
         <Setter Property="Padding" Value="16,0" />
+        <!-- A custom BackgroundColor overrides MAUI's default disabled
+             appearance, so a disabled button would otherwise look identical to
+             an enabled one. -->
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{StaticResource ColorBorderStrong}" />
+                            <Setter Property="TextColor" Value="{StaticResource ColorSurface}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
     </Style>
 
     <Style x:Key="ButtonSecondary" TargetType="Button">

@@ -112,6 +112,30 @@ public static class UserRoles
 }
 
 /// <summary>
+/// A user's standing WITHIN their company, kept separate from
+/// <see cref="UserRoles"/> on purpose.
+///
+/// UserDoc.role is platform-level: 'admin' means "runs the whole platform" and
+/// carries no companyId. companyRole answers a different question — "does this
+/// person run their company's crew" — and collapsing the two into one field
+/// makes a platform admin accidentally a manager everywhere, or forces a
+/// company manager to be given platform powers.
+///
+/// Absent means Staff. Every existing user therefore reads as Staff without a
+/// migration, which is the safe default: nobody silently gains manager rights.
+/// </summary>
+public static class CompanyRoles
+{
+    public const string Manager = "manager";
+    public const string Staff   = "staff";
+
+    public static readonly string[] All = [Manager, Staff];
+
+    public static string Label(string? role) =>
+        role == Manager ? "Manager" : "Team member";
+}
+
+/// <summary>
 /// Agenda task statuses. Stored lowercase with underscores ('in_progress'),
 /// unlike lead/job statuses which are stored title-case — that inconsistency
 /// is in the existing data, so it is mirrored rather than "fixed" here.

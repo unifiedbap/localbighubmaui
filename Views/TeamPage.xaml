@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.TeamPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:TeamViewModel"
+    Title="Manage Team"
+    BackgroundColor="{StaticResource ColorPageBg}">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource Space4}">
+
+                <!-- Non-managers shouldn't reach this screen, but if they do,
+                     say so plainly rather than showing an empty roster. -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding IsManager, Converter={StaticResource InverseBool}}">
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="Managers only" Style="{StaticResource TextCardPrimary}" />
+                        <Label Text="Ask a manager at your company to change who's on the crew."
+                               Style="{StaticResource TextCardSecondary}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout IsVisible="{Binding IsManager}" Spacing="{StaticResource Space4}">
+
+                    <Label Text="{Binding Summary}" Style="{StaticResource TextSectionLabel}" />
+
+                    <Border IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                            BackgroundColor="{StaticResource ColorDangerTint}" Stroke="{StaticResource ColorDanger}"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                        <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+                    </Border>
+
+                    <Border IsVisible="{Binding Notice, Converter={StaticResource IsNotNullOrEmpty}}"
+                            BackgroundColor="{StaticResource ColorSuccessTint}" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                        <Label Text="{Binding Notice}" TextColor="{StaticResource ColorSuccess}" />
+                    </Border>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Members}" Spacing="{StaticResource Space3}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TeamMemberRow">
+                                <Border Style="{StaticResource Card}">
+                                    <VerticalStackLayout Spacing="{StaticResource Space3}">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="{StaticResource Space1}">
+                                                <Label Text="{Binding Name}" Style="{StaticResource TextCardPrimary}" />
+                                                <Label Text="{Binding Role}" Style="{StaticResource TextCardSecondary}" />
+                                                <Label Text="{Binding LinkDetail}" Style="{StaticResource TextCaption}" />
+                                            </VerticalStackLayout>
+                                            <Border Grid.Column="1" BackgroundColor="{Binding StatusTint}" StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Start">
+                                                <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeLabel}" TextColor="{Binding StatusInk}" />
+                                            </Border>
+                                        </Grid>
+                                        <Button Text="{Binding ActionLabel}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TeamViewModel}}, Path=OpenLinkCommand}"
+                                                CommandParameter="{Binding Id}"
+                                                Style="{StaticResource ButtonSecondary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="Adding someone new" Style="{StaticResource TextCardPrimary}" />
+                            <Label Text="Logins are created by a platform admin and assigned to this company. Once that's done, their name appears in the list here and you can link it."
+                                   Style="{StaticResource TextCardSecondary}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <BoxView HeightRequest="72" Color="Transparent" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ── Link picker ────────────────────────────────────────────────── -->
+        <Grid IsVisible="{Binding IsLinkOpen}" BackgroundColor="#99131820">
+            <Border Style="{StaticResource Card}" Margin="16" VerticalOptions="Center">
+                <VerticalStackLayout Spacing="{StaticResource Space4}">
+
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="Link a login" Style="{StaticResource TextTitle}" />
+                        <Label Text="{Binding LinkTargetName, StringFormat='Choose the account for {0}'}"
+                               Style="{StaticResource TextCardSecondary}" />
+                    </VerticalStackLayout>
+
+                    <Label IsVisible="{Binding HasUnlinkedUsers, Converter={StaticResource InverseBool}}"
+                           Text="Every login for this company is already linked to someone. Ask a platform admin to create another account first."
+                           Style="{StaticResource TextCardSecondary}" />
+
+                    <ScrollView MaximumHeightRequest="320">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding UnlinkedUsers}" Spacing="{StaticResource Space2}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:UserOption">
+                                    <Border BackgroundColor="{StaticResource ColorSurfaceAlt}"
+                                            Stroke="{StaticResource ColorBorder}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 10" Padding="{StaticResource Space3}"
+                                            MinimumHeightRequest="{StaticResource TouchTarget}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TeamViewModel}}, Path=ChooseUserCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="{StaticResource Space1}">
+                                                <Label Text="{Binding DisplayName}" Style="{StaticResource TextCardPrimary}" />
+                                                <Label Text="{Binding Email}" Style="{StaticResource TextCaption}" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding CompanyRoleLabel}"
+                                                   Style="{StaticResource TextCaption}" VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <Button Text="Cancel" Command="{Binding CloseLinkCommand}" Style="{StaticResource ButtonSecondary}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

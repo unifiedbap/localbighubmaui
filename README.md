@@ -27,7 +27,8 @@ client id (see below). Six modules remain unported.
 | `Views/DashboardPage.xaml` | `apps/web/src/pages/Dashboard.tsx` | Needs-action list, Quick Actions, counts |
 | `Views/LeadsPage.xaml` | `apps/web/src/pages/Leads.tsx` | List, filters, add/edit/delete |
 | `Views/JobsPage.xaml` | `apps/web/src/pages/Jobs.tsx` | List + status filters (read-only) |
-| `Views/TimePage.xaml` | `apps/web/src/pages/Time.tsx` | Entries grouped by day (read-only) |
+| `Views/TimePage.xaml` | `apps/web/src/pages/Time.tsx` | Clock in/out + month calendar of hours |
+| `Views/TeamPage.xaml` | `apps/web/src/pages/Time.tsx` (Manage Team) | Manager-only: link logins to crew |
 | `Views/AgendaPage.xaml` | `apps/web/src/pages/Agenda.tsx` | Tasks + inline done/reopen |
 | `Views/CalendarPage.xaml` | `apps/web/src/pages/Calendar.tsx` | Upcoming agenda + external sync |
 | `Services/ModuleRegistry.cs` | — | Label/icon/route for every module, in one place |
@@ -36,8 +37,8 @@ client id (see below). Six modules remain unported.
 
 Clients, GC & Contractors, Marketing, Cold Call CRM, Money, Bids, Expenses,
 Customer Portal — plus, within Leads, the spreadsheet import flow, the
-cold-call cadence engine, and lead→client→job conversion. Jobs and Time are
-read-only for now. The **More** tab lists the company's enabled modules and
+cold-call cadence engine, and lead→client→job conversion. Jobs is read-only for
+now, and Manage Team can link and unlink crew but not add or rename them. The **More** tab lists the company's enabled modules and
 marks which ones this build actually implements.
 
 ## Quick Actions
@@ -53,6 +54,55 @@ rejected with permission-denied. To make the preference follow a user between
 devices: add `quickActions` to `touchesOnlyNotifyFields()` in `firestore.rules`,
 deploy, then swap the two methods in `Services/UserPreferences.cs` for a
 Firestore read/write. Nothing else has to change.
+
+## Roles, employees, and clocking in
+
+**companyRole is separate from role.** `UserDoc.role` stays platform-level
+(`admin` has no companyId at all); `companyRole` is `manager` or `staff` within
+a company. Absent reads as staff, so no existing user gains manager rights when
+this ships. Collapsing them into one field would make a platform admin
+accidentally a manager everywhere, or force a crew manager to be given platform
+powers.
+
+**Employees link to logins, they don't replace them.** `employees` keeps its
+free-text records (the web Time page and the QuickBooks export depend on
+`name`/`qbName`) and gains an optional `uid` pointing at `/users/{uid}`. Only a
+*linked* employee can clock in, because that link is the only thing proving
+whose shift it is. Unlinked crew still get hours logged for them from the web
+app.
+
+**Managers link; they don't create logins.** A client cannot mint a Firebase
+Auth user, and relaxing `createCompanyUser` so managers could would mean
+managers setting other people's passwords. A platform admin creates the account
+and assigns it to the company; the manager's **More → Manage Team** screen then
+picks from users already on that company.
+
+**A shift is a TimeEntry with a start and no end.** No new field: clocking in
+writes `startTime` with `endTime` empty and `hours` 0; clocking out fills both.
+An in-progress shift therefore contributes 0 to every total, including the
+web app's payroll export — you can't bill hours nobody has finished. A shift
+crossing midnight adds a day rather than recording negative hours.
+
+### Firestore rules — must be deployed
+
+`firestore.rules` in the **northstarapp** repo gains an `isManager(companyId)`
+helper and an `employees` carve-out: everyone on the company reads the roster
+(Time needs it to resolve names and find "me"), only managers write it. The
+generic subcollection rule now excludes `employees`, because overlapping
+matches UNION their allows — without the exclusion any member would still get
+writes.
+
+Until that is deployed, the manager gate is **client-side only and bypassable**.
+The in-app checks (`SessionService.IsManager`) are convenience, not a security
+boundary.
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+The Manage Team picker also reads `/users` filtered by `companyId`, which needs
+the teammate-read rule. If that isn't live the screen says so explicitly rather
+than showing an empty picker that looks like "no users exist".
 
 ## Calendar sync
 
