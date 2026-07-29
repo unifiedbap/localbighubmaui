@@ -132,10 +132,22 @@ patterns when porting a module.
 `StatusTones`: green = active/done, amber = pending, red = urgent/overdue.
 Lost is neutral, not red — a lost lead isn't an error.
 
-**Navigation.** Bottom tabs always pair icon + label, and are capped at five
-(`MaxPrimaryTabs` in `AppShell.xaml.cs`). Everything else is reached through
-the icon-grid launcher on the More tab, which lists every enabled module and
-visibly marks the ones this client doesn't implement yet.
+**Navigation.** Three permanent slots: **Dashboard · [active module] · More**,
+always icon + label. Dashboard and More never move; the middle slot is the
+"where am I" tab — it starts on Leads and becomes whatever module you open from
+Quick Actions or the More launcher, so the highlighted tab always matches the
+screen.
+
+That middle slot is one persistent `ModuleHostPage` whose content is swapped
+(`AppShell.ShowModuleAsync`). Modules are deliberately *not* pushed onto a
+tab's navigation stack: doing that left the bar highlighting "Dashboard" while
+the page title said "Calendar", with no way back. Swapping also lets the bar
+stay at three however many modules a company enables — the launcher absorbs the
+growth, so every target stays well past the 44pt touch floor.
+
+Each swap disposes the outgoing view model. They hold live Firestore snapshot
+listeners, and switching without disposing would accumulate one listener per
+visit for the whole session.
 
 **Pipeline wording is never hardcoded.** Dashboard action rows title themselves
 from `StageLabels`, so an agency sees "Meeting scheduled" where a contractor

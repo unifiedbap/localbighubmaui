@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BigLocalHub.ViewModels;
 
-public partial class JobsViewModel : ObservableObject, IDisposable
+public partial class JobsViewModel : ObservableObject, IDisposable, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;

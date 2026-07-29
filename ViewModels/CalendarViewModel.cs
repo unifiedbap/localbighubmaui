@@ -16,7 +16,7 @@ namespace BigLocalHub.ViewModels;
 /// is no separate events collection to read, and inventing one here would put
 /// this client out of step with the web app.
 /// </summary>
-public partial class CalendarViewModel : ObservableObject, IDisposable
+public partial class CalendarViewModel : ObservableObject, IDisposable, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;

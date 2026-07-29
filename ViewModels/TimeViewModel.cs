@@ -10,7 +10,7 @@ namespace BigLocalHub.ViewModels;
 /// Time entries grouped by day, newest first — the shape someone checking
 /// "what did we log this week" actually wants, rather than a flat list.
 /// </summary>
-public partial class TimeViewModel : ObservableObject, IDisposable
+public partial class TimeViewModel : ObservableObject, IDisposable, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;

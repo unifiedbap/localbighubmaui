@@ -11,7 +11,7 @@ namespace BigLocalHub.ViewModels;
 /// task's status — without opening a form, since the common action is ticking
 /// something off between jobs.
 /// </summary>
-public partial class AgendaViewModel : ObservableObject, IDisposable
+public partial class AgendaViewModel : ObservableObject, IDisposable, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;

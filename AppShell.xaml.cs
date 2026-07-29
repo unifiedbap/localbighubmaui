@@ -5,27 +5,30 @@ using BigLocalHub.Views;
 namespace BigLocalHub;
 
 /// <summary>
-/// Builds the tab bar from company.enabledModules, mirroring how the web
-/// Sidebar and the Expo tab bar both gate on the same field. A module the
-/// company doesn't have is not rendered at all — it isn't merely hidden, so
-/// there's no route to reach it.
+/// Three permanent slots: Dashboard · [active module] · More.
 ///
-/// The tab bar is deliberately capped (see MaxPrimaryTabs). Modules beyond the
-/// cap are reached through the launcher grid on the More tab rather than by
-/// letting the bar grow until the labels truncate — a crowded tab bar is
-/// exactly what breaks the "find it in three seconds" goal, and shrinking
-/// labels to fit would break the 44pt touch floor.
+/// Dashboard and More never move. The middle slot is the "where am I" tab — it
+/// starts on Leads and becomes whatever module you open from Quick Actions or
+/// the More launcher, so the highlighted tab always matches the screen. That
+/// replaces an earlier design where modules were pushed onto the Dashboard
+/// tab's stack, which left the bar reading "Dashboard" while the page said
+/// "Calendar", with no way back.
+///
+/// Keeping the bar at three also keeps every target comfortably past the 44pt
+/// touch floor no matter how many modules a company enables — the More
+/// launcher absorbs the growth instead of the tab bar.
 /// </summary>
 public partial class AppShell : Shell
 {
+    public const string ModuleRoute = "module";
+
     private readonly SessionService _session;
     private readonly IServiceProvider _services;
+    private readonly ModuleHostPage _host = new();
+    private ShellContent? _moduleTab;
 
-    /// <summary>
-    /// Primary tabs excluding More. Four plus More = five total, the ceiling
-    /// from the design brief.
-    /// </summary>
-    private const int MaxPrimaryTabs = 4;
+    /// <summary>Convenience accessor for view models that need to switch modules.</summary>
+    public static AppShell? Instance => Current as AppShell;
 
     public AppShell(SessionService session, IServiceProvider services)
     {
@@ -40,38 +43,67 @@ public partial class AppShell : Shell
         Items.Clear();
         var tabs = new TabBar();
 
-        // Ordered by daily importance, not by the module list's order — the
-        // first two slots are what a contractor opens the app for.
-        var candidates = new (string Module, string Title, string Icon, Type Page)[]
+        if (_session.HasModule(Modules.Dashboard))
         {
-            (Modules.Dashboard, "Dashboard", "icon_dashboard.png", typeof(DashboardPage)),
-            (Modules.Leads,     "Leads",     "icon_leads.png",     typeof(LeadsPage)),
-        };
-
-        var added = 0;
-        foreach (var c in candidates)
-        {
-            if (added >= MaxPrimaryTabs) break;
-            if (!_session.HasModule(c.Module)) continue;
-            tabs.Items.Add(MakeTab(c.Title, c.Module, c.Icon, c.Page));
-            added++;
+            tabs.Items.Add(new ShellContent
+            {
+                Title = "Dashboard",
+                Icon = "icon_dashboard.png",
+                Route = "dashboard",
+                ContentTemplate = new DataTemplate(() => _services.GetRequiredService<DashboardPage>()),
+            });
         }
 
-        // Always present: it holds the launcher for every other module plus
-        // sign-out, so the user is never stranded even with no modules enabled.
-        tabs.Items.Add(MakeTab("More", "more", "icon_more.png", typeof(MorePage)));
+        // The dynamic slot. ShowModuleAsync swaps its content; only Title and
+        // Icon change in the bar itself.
+        var initial = DefaultModule();
+        if (initial is not null)
+        {
+            _host.ShowModule(initial, _services);
+            _moduleTab = new ShellContent
+            {
+                Title = initial.Label,
+                Icon = initial.Icon,
+                Route = ModuleRoute,
+                Content = _host,
+            };
+            tabs.Items.Add(_moduleTab);
+        }
+
+        tabs.Items.Add(new ShellContent
+        {
+            Title = "More",
+            Icon = "icon_more.png",
+            Route = "more",
+            ContentTemplate = new DataTemplate(() => _services.GetRequiredService<MorePage>()),
+        });
 
         Items.Add(tabs);
     }
 
-    private ShellContent MakeTab(string title, string route, string icon, Type pageType) => new()
+    /// <summary>
+    /// Leads by default, falling back to whatever the company does have, so a
+    /// company without Leads still gets a usable middle tab rather than a gap.
+    /// </summary>
+    private ModuleInfo? DefaultModule()
     {
-        // Title AND Icon together — never icon-only. Shell renders both in the
-        // tab bar, which is what keeps the destination readable for users who
-        // don't recognise the glyph.
-        Title = title,
-        Icon = icon,
-        Route = route,
-        ContentTemplate = new DataTemplate(() => _services.GetRequiredService(pageType)),
-    };
+        var swappable = ModuleRegistry.SwappableFor(_session.EnabledModules).ToList();
+        return swappable.FirstOrDefault(m => m.Key == Modules.Leads) ?? swappable.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Points the middle tab at <paramref name="moduleKey"/> and selects it.
+    /// Dashboard and More are unaffected.
+    /// </summary>
+    public async Task ShowModuleAsync(string moduleKey, IDictionary<string, object>? args = null)
+    {
+        var info = ModuleRegistry.Get(moduleKey);
+        if (!info.Implemented || _moduleTab is null) return;
+
+        _host.ShowModule(info, _services, args);
+        _moduleTab.Title = info.Label;
+        _moduleTab.Icon = info.Icon;
+
+        await GoToAsync($"//{ModuleRoute}");
+    }
 }

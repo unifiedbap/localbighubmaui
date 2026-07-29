@@ -70,18 +70,7 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        var app = builder.Build();
-
-        // Push-navigation routes for the modules that aren't bottom tabs. They
-        // resolve through DI (see DiRouteFactory) and are pushed rather than
-        // switched to, so they get a back button to wherever the user came
-        // from — Dashboard's Quick Actions or the More launcher.
-        Routing.RegisterRoute("jobs",     new DiRouteFactory(app.Services, typeof(JobsPage)));
-        Routing.RegisterRoute("time",     new DiRouteFactory(app.Services, typeof(TimePage)));
-        Routing.RegisterRoute("agenda",   new DiRouteFactory(app.Services, typeof(AgendaPage)));
-        Routing.RegisterRoute("calendar", new DiRouteFactory(app.Services, typeof(CalendarPage)));
-
-        return app;
+        return builder.Build();
     }
 
     /// <summary>

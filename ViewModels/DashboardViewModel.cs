@@ -67,7 +67,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         foreach (var key in chosen)
         {
             var m = ModuleRegistry.Get(key);
-            QuickActions.Add(new QuickAction(m.Key, m.Label, m.Icon, m.Route));
+            QuickActions.Add(new QuickAction(m.Key, m.Label, m.Icon));
         }
 
         BuildChoices(chosen);
@@ -132,8 +132,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private static async Task OpenQuickActionAsync(QuickAction action)
     {
-        if (string.IsNullOrEmpty(action.Route)) return;
-        await Shell.Current.GoToAsync(action.Route);
+        if (AppShell.Instance is { } shell) await shell.ShowModuleAsync(action.Key);
     }
 
     [ObservableProperty] private string _greeting = string.Empty;
@@ -313,13 +312,18 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private static async Task OpenLeadsFilteredAsync(string status)
     {
-        // Deep-links to the Leads tab with the filter already applied, so an
+        // Points the middle tab at Leads with the filter already applied, so an
         // action row lands on the actual work rather than an unfiltered list.
-        await Shell.Current.GoToAsync($"//leads?status={Uri.EscapeDataString(status)}");
+        if (AppShell.Instance is { } shell)
+            await shell.ShowModuleAsync(Modules.Leads,
+                new Dictionary<string, object> { ["status"] = status });
     }
 
     [RelayCommand]
-    private static async Task OpenLeadsAsync() => await Shell.Current.GoToAsync("//leads");
+    private static async Task OpenLeadsAsync()
+    {
+        if (AppShell.Instance is { } shell) await shell.ShowModuleAsync(Modules.Leads);
+    }
 
     public void Dispose()
     {
@@ -353,7 +357,7 @@ public record LeadRow(
     Color StatusInk,
     Color StatusTint);
 
-public record QuickAction(string Key, string Label, string Icon, string Route);
+public record QuickAction(string Key, string Label, string Icon);
 
 public record QuickActionChoice(
     string Key,

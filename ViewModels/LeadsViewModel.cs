@@ -14,7 +14,7 @@ namespace BigLocalHub.ViewModels;
 /// The import flow, cadence engine, and lead→job conversion from the web app
 /// are still out of scope here.
 /// </summary>
-public partial class LeadsViewModel : ObservableObject, IDisposable
+public partial class LeadsViewModel : ObservableObject, IDisposable, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;

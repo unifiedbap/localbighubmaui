@@ -52,12 +52,12 @@ public partial class MoreViewModel : ObservableObject
         foreach (var key in _session.EnabledModules)
         {
             var m = ModuleRegistry.Get(key);
-            var available = m.Implemented && m.Route.Length > 0;
+            var available = m.Implemented;
             Tiles.Add(new ModuleTile(
+                m.Key,
                 m.Label,
                 m.Icon,
                 available,
-                available ? m.Route : string.Empty,
                 available ? string.Empty : "Web only for now",
                 // Unavailable tiles are dimmed via color rather than opacity so
                 // the label still clears the contrast floor.
@@ -79,8 +79,15 @@ public partial class MoreViewModel : ObservableObject
     [RelayCommand]
     private static async Task OpenModuleAsync(ModuleTile tile)
     {
-        if (!tile.IsAvailable || string.IsNullOrEmpty(tile.Route)) return;
-        await Shell.Current.GoToAsync(tile.Route);
+        if (!tile.IsAvailable) return;
+        // Dashboard keeps its own permanent tab; everything else takes over
+        // the dynamic middle slot.
+        if (tile.Key == Modules.Dashboard)
+        {
+            await Shell.Current.GoToAsync("//dashboard");
+            return;
+        }
+        if (AppShell.Instance is { } shell) await shell.ShowModuleAsync(tile.Key);
     }
 
     [RelayCommand]
@@ -97,9 +104,9 @@ public partial class MoreViewModel : ObservableObject
 }
 
 public record ModuleTile(
+    string Key,
     string Label,
     string Icon,
     bool IsAvailable,
-    string Route,
     string Note,
     Color LabelColor);
