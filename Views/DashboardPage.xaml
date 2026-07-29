@@ -149,15 +149,29 @@
                     <FlexLayout BindableLayout.ItemsSource="{Binding QuickActions}" Wrap="Wrap" JustifyContent="SpaceBetween">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:QuickAction">
-                                <Border Style="{StaticResource Card}" WidthRequest="168" MinimumHeightRequest="96" Margin="0,0,0,12">
+                                <!-- MinimumHeight, not Height: the blurb wraps to more
+                                     lines as the OS text size goes up, and the tile has
+                                     to grow with it rather than clip. -->
+                                <Border Style="{StaticResource Card}" WidthRequest="168" MinimumHeightRequest="124" Margin="0,0,0,12">
                                     <Border.GestureRecognizers>
                                         <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=OpenQuickActionCommand}"
                                             CommandParameter="{Binding .}" />
                                     </Border.GestureRecognizers>
-                                    <VerticalStackLayout Spacing="{StaticResource Space2}" VerticalOptions="Center">
-                                        <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" HorizontalOptions="Start" />
+
+                                    <VerticalStackLayout Spacing="{StaticResource Space2}">
+                                        <!-- Icon left, chevron right: the chevron is the
+                                             affordance saying the whole tile is tappable. -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Image Grid.Column="0" Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" />
+                                            <Label Grid.Column="2" Text="›"
+                                                   FontSize="{StaticResource FontTitle}"
+                                                   TextColor="{StaticResource ColorAccent}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
                                         <Label Text="{Binding Label}" Style="{StaticResource TextCardPrimary}" />
+                                        <Label Text="{Binding Blurb}" Style="{StaticResource TextCaption}" LineBreakMode="WordWrap" />
                                     </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>

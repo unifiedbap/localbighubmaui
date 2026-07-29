@@ -88,6 +88,18 @@
         <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
     </Style>
 
+    <!--
+        Supporting text that qualifies a label directly above it — never
+        standalone content, which is why it may sit below the 16 body floor.
+        Uses the SECONDARY ink (6.3:1), not tertiary: it is smaller than body,
+        so it must not also be the faintest thing on the card.
+    -->
+    <Style x:Key="TextCaption" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontLabel}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+    </Style>
+
     <!-- Section eyebrow above a group of cards. Not body copy. -->
     <Style x:Key="TextSectionLabel" TargetType="Label">
         <Setter Property="FontAutoScalingEnabled" Value="True" />

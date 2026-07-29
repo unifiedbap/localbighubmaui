@@ -67,7 +67,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         foreach (var key in chosen)
         {
             var m = ModuleRegistry.Get(key);
-            QuickActions.Add(new QuickAction(m.Key, m.Label, m.Icon));
+            QuickActions.Add(new QuickAction(m.Key, m.Label, m.Icon, m.Blurb));
         }
 
         BuildChoices(chosen);
@@ -357,7 +357,7 @@ public record LeadRow(
     Color StatusInk,
     Color StatusTint);
 
-public record QuickAction(string Key, string Label, string Icon);
+public record QuickAction(string Key, string Label, string Icon, string Blurb);
 
 public record QuickActionChoice(
     string Key,
