@@ -23,3 +23,5 @@ artifacts/
 # NuGet
 *.nupkg
 packages/
+
+.fake

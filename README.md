@@ -8,8 +8,9 @@ mobile app, and a shared `packages/core`.
 This project talks to **the same Firebase project** (`big-local-ideas`) and the
 same Firestore documents. It is not a fork of the data, just a second client.
 
-**Status: walking skeleton.** Auth, company/module gating, Dashboard, and Leads
-work end to end. The other ten modules are not built yet.
+**Status: walking skeleton + design system.** Auth, company/module gating,
+Dashboard, and Leads work end to end, all on the shared token system described
+below. The other ten modules are not built yet.
 
 ---
 
@@ -34,6 +35,49 @@ conversion. The **More** tab lists the company's enabled modules and marks
 which ones this build actually implements.
 
 ---
+
+## Design system
+
+Light theme, token-driven. **Screens must consume tokens — never inline a hex
+value or a magic number.** Dashboard is the reference implementation; copy its
+patterns when porting a module.
+
+| File | Holds |
+|---|---|
+| `Resources/Styles/Tokens/Colors.xaml` | Palette + status pairs, with measured WCAG ratios |
+| `Resources/Styles/Tokens/Typography.xaml` | Type scale + base text styles |
+| `Resources/Styles/Tokens/Spacing.xaml` | 4pt spacing scale, radii, touch floor |
+| `Resources/Styles/Components.xaml` | Cards, badges, buttons, chips, form controls |
+| `Services/DesignTokens.cs` | C# mirror for the code-built Splash/Notice pages |
+
+**Accessibility rules baked into the tokens**
+
+- Body text floor is 16pt. 14pt exists only for badges and section eyebrows,
+  which are short bold labels, not content.
+- `FontAutoScalingEnabled` is set explicitly on every text style, so the OS
+  accessibility text-size setting is respected. Nothing pins a height around
+  text — rows use `MinimumHeightRequest` so they grow instead of clipping.
+- 44pt minimum touch target, inherited from the component styles rather than
+  remembered per screen.
+- Every text/background pair is checked against WCAG AA and the measured ratio
+  is recorded in `Colors.xaml`. The accent was darkened from `#0F77E6` to
+  `#0B63C4` because the original measured 4.37:1 on white and failed AA for
+  body text.
+- Status badges are dark ink on a light tint, never white on a saturated fill —
+  saturated fills at badge size rarely clear 4.5:1.
+
+**Status colors** mean the same thing everywhere, resolved through
+`StatusTones`: green = active/done, amber = pending, red = urgent/overdue.
+Lost is neutral, not red — a lost lead isn't an error.
+
+**Navigation.** Bottom tabs always pair icon + label, and are capped at five
+(`MaxPrimaryTabs` in `AppShell.xaml.cs`). Everything else is reached through
+the icon-grid launcher on the More tab, which lists every enabled module and
+visibly marks the ones this client doesn't implement yet.
+
+**Pipeline wording is never hardcoded.** Dashboard action rows title themselves
+from `StageLabels`, so an agency sees "Meeting scheduled" where a contractor
+sees "Quote scheduled".
 
 ## Architecture notes
 

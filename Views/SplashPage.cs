@@ -1,17 +1,20 @@
+using BigLocalHub.Services;
+
 namespace BigLocalHub.Views;
 
 /// <summary>
 /// Shown while the auth state resolves. Built in code rather than XAML because
-/// it is three controls and is constructed before DI hands out any view model.
+/// it is constructed before any ResourceDictionary lookup is available, which
+/// is why it reads the C# token mirror (Tokens) instead of StaticResource.
 /// </summary>
 public class SplashPage : ContentPage
 {
     public SplashPage()
     {
-        BackgroundColor = Color.FromArgb("#0D0D0F");
+        BackgroundColor = Tokens.Palette.PageBg;
         Content = new VerticalStackLayout
         {
-            Spacing = 16,
+            Spacing = Tokens.Space.S4,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Center,
             Children =
@@ -19,15 +22,16 @@ public class SplashPage : ContentPage
                 new Label
                 {
                     Text = "Big Local Hub",
-                    FontSize = 24,
+                    FontSize = Tokens.Type.Title,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Color.FromArgb("#F2F2F5"),
+                    FontAutoScalingEnabled = true,
+                    TextColor = Tokens.Palette.TextPrimary,
                     HorizontalTextAlignment = TextAlignment.Center,
                 },
                 new ActivityIndicator
                 {
                     IsRunning = true,
-                    Color = Color.FromArgb("#0F77E6"),
+                    Color = Tokens.Palette.Accent,
                 },
             },
         };
@@ -43,15 +47,21 @@ public class NoticePage : ContentPage
 {
     public NoticePage(string title, string message, Func<Task> onSignOut)
     {
-        BackgroundColor = Color.FromArgb("#0D0D0F");
+        BackgroundColor = Tokens.Palette.PageBg;
 
         var button = new Button
         {
             Text = "Sign Out",
-            BackgroundColor = Color.FromArgb("#1F1F25"),
-            TextColor = Color.FromArgb("#F2F2F5"),
-            CornerRadius = 10,
-            HeightRequest = 46,
+            BackgroundColor = Tokens.Palette.Surface,
+            TextColor = Tokens.Palette.Accent,
+            BorderColor = Tokens.Palette.BorderStrong,
+            BorderWidth = 1,
+            FontSize = Tokens.Type.Body,
+            FontAttributes = FontAttributes.Bold,
+            FontAutoScalingEnabled = true,
+            CornerRadius = 12,
+            MinimumHeightRequest = Tokens.TouchTarget,
+            HeightRequest = 50,
         };
         button.Clicked += async (_, _) => await onSignOut();
 
@@ -59,24 +69,26 @@ public class NoticePage : ContentPage
         {
             Content = new VerticalStackLayout
             {
-                Padding = 28,
-                Spacing = 14,
+                Padding = new Thickness(24),
+                Spacing = Tokens.Space.S4,
                 VerticalOptions = LayoutOptions.Center,
                 Children =
                 {
                     new Label
                     {
                         Text = title,
-                        FontSize = 22,
+                        FontSize = Tokens.Type.Title,
                         FontAttributes = FontAttributes.Bold,
-                        TextColor = Color.FromArgb("#F2F2F5"),
+                        FontAutoScalingEnabled = true,
+                        TextColor = Tokens.Palette.TextPrimary,
                         HorizontalTextAlignment = TextAlignment.Center,
                     },
                     new Label
                     {
                         Text = message,
-                        FontSize = 14.5,
-                        TextColor = Color.FromArgb("#A0A0AC"),
+                        FontSize = Tokens.Type.Body,
+                        FontAutoScalingEnabled = true,
+                        TextColor = Tokens.Palette.TextSecondary,
                         HorizontalTextAlignment = TextAlignment.Center,
                     },
                     button,

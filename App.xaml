@@ -6,11 +6,21 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- MAUI template baseline: provides Shell/NavigationPage/page
+                     chrome styles. Kept because Styles.xaml references keys
+                     from Colors.xaml — pull one and the other breaks. -->
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
-                <!-- Last so the hub's dark palette and control styles win over
-                     the MAUI template defaults merged above. -->
-                <ResourceDictionary Source="Resources/Styles/Theme.xaml" />
+
+                <!-- Design tokens. Order matters: Typography and Components
+                     resolve color keys from Tokens/Colors.xaml, so it loads
+                     first. Merged after the template so our implicit Label
+                     style and control styles win. -->
+                <ResourceDictionary Source="Resources/Styles/Tokens/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Tokens/Typography.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Tokens/Spacing.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Components.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

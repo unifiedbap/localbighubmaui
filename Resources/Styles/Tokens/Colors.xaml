@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    DESIGN TOKEN: Color
+    ===================
+    The single source of truth for every color in the app. Screens must consume
+    these keys and never inline a hex value, so a palette change is one edit
+    here rather than a hunt through XAML.
+
+    Light theme is the product default: the hub is used outdoors in bright sun
+    on job sites, where a dark UI washes out badly.
+
+    Every text/background pairing below is checked against WCAG 2.1 AA
+    (4.5:1 for body text, 3:1 for large/bold). Measured ratios are noted so a
+    future palette tweak can be re-checked rather than eyeballed.
+
+    Status colors are defined as a PAIR — a dark ink plus a light tint
+    background. Badges use tint-behind-ink rather than white-on-saturated,
+    because saturated fills at badge size rarely clear 4.5:1 and are the usual
+    source of "pretty but unreadable" status chips.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ── Surfaces ──────────────────────────────────────────────────────── -->
+    <Color x:Key="ColorPageBg">#F4F6F8</Color>
+    <Color x:Key="ColorSurface">#FFFFFF</Color>
+    <Color x:Key="ColorSurfaceAlt">#FAFBFC</Color>
+    <Color x:Key="ColorBorder">#DFE3E8</Color>
+    <Color x:Key="ColorBorderStrong">#C6CCD4</Color>
+
+    <!-- ── Text ──────────────────────────────────────────────────────────── -->
+    <!-- 17.0:1 on white -->
+    <Color x:Key="ColorTextPrimary">#131820</Color>
+    <!-- 6.3:1 on white — safe for the muted secondary line in list cards -->
+    <Color x:Key="ColorTextSecondary">#55606E</Color>
+    <!-- 4.6:1 on white — the lightest text permitted anywhere. Do not go lighter. -->
+    <Color x:Key="ColorTextTertiary">#6B7684</Color>
+    <Color x:Key="ColorTextOnAccent">#FFFFFF</Color>
+
+    <!-- ── Accent (one accent color, per the brief) ──────────────────────── -->
+    <!-- Darkened from the original #0F77E6, which measured 4.37:1 on white and
+         so failed AA for body-size text. This is 5.8:1 and reads as the same
+         blue. -->
+    <Color x:Key="ColorAccent">#0B63C4</Color>
+    <Color x:Key="ColorAccentPressed">#094E9C</Color>
+    <Color x:Key="ColorAccentTint">#E8F1FC</Color>
+
+    <!-- ── Status: green = active / done ─────────────────────────────────── -->
+    <Color x:Key="ColorSuccess">#146B3F</Color>
+    <Color x:Key="ColorSuccessTint">#E6F4EC</Color>
+
+    <!-- ── Status: amber = pending / waiting ─────────────────────────────── -->
+    <Color x:Key="ColorWarning">#8A5A00</Color>
+    <Color x:Key="ColorWarningTint">#FDF3E1</Color>
+
+    <!-- ── Status: red = urgent / overdue ────────────────────────────────── -->
+    <Color x:Key="ColorDanger">#B3271A</Color>
+    <Color x:Key="ColorDangerTint">#FCEBE9</Color>
+
+    <!-- ── Neutral status (no action needed / closed) ────────────────────── -->
+    <Color x:Key="ColorNeutral">#55606E</Color>
+    <Color x:Key="ColorNeutralTint">#EEF1F4</Color>
+
+</ResourceDictionary>

@@ -2,12 +2,21 @@ using System.Collections.ObjectModel;
 using BigLocalHub.Models;
 using BigLocalHub.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace BigLocalHub.ViewModels;
 
 /// <summary>
-/// Port of apps/web/src/pages/Dashboard.tsx — four stat tiles plus the two
-/// recent lists, all driven by live collection listeners.
+/// Dashboard — the template screen for the design system.
+///
+/// Structured around one requirement: a user must see what needs action within
+/// about three seconds of opening the app. So the screen leads with a NEEDS
+/// ACTION list (sorted most-urgent first) rather than with vanity totals; the
+/// counts live below it as context, and recent activity below that.
+///
+/// Every action row is tappable and deep-links into Leads pre-filtered to the
+/// matching status, so "4 leads need first contact" is one tap from the work
+/// itself rather than a number you then go hunting for.
 /// </summary>
 public partial class DashboardViewModel : ObservableObject, IDisposable
 {
@@ -19,91 +28,201 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private IReadOnlyList<Job> _jobs = [];
     private IReadOnlyList<Client> _clients = [];
 
+    /// <summary>
+    /// A New lead older than this is treated as overdue rather than merely new.
+    /// Three working days is the point the cold-call cadence in the web app
+    /// considers a first touch late.
+    /// </summary>
+    private const int OverdueAfterDays = 3;
+
     public DashboardViewModel(SessionService session, FirestoreRepository repo)
     {
         _session = session;
         _repo = repo;
     }
 
-    [ObservableProperty] private int _openLeads;
-    [ObservableProperty] private int _totalLeads;
-    [ObservableProperty] private int _activeJobs;
-    [ObservableProperty] private int _totalJobs;
-    [ObservableProperty] private int _totalClients;
+    [ObservableProperty] private string _greeting = string.Empty;
     [ObservableProperty] private string _companyName = string.Empty;
     [ObservableProperty] private bool _isDemo;
     [ObservableProperty] private string? _error;
+    [ObservableProperty] private bool _isLoading = true;
 
+    [ObservableProperty] private int _openLeads;
+    [ObservableProperty] private int _totalLeads;
+    [ObservableProperty] private int _activeJobs;
+    [ObservableProperty] private int _totalClients;
+
+    /// <summary>True when there is genuinely nothing to act on.</summary>
+    [ObservableProperty] private bool _allCaughtUp;
+
+    public ObservableCollection<ActionItem> NeedsAction { get; } = [];
     public ObservableCollection<LeadRow> RecentLeads { get; } = [];
-    public ObservableCollection<JobRow> RecentJobs { get; } = [];
 
     public void Load()
     {
-        var companyId = _session.CompanyId;
-        if (string.IsNullOrWhiteSpace(companyId)) return;
-
+        Greeting = GreetingForHour(DateTime.Now.Hour);
         CompanyName = _session.Company?.Name ?? string.Empty;
         IsDemo = _session.Company?.Demo ?? false;
+
+        var companyId = _session.CompanyId;
+        if (string.IsNullOrWhiteSpace(companyId))
+        {
+            IsLoading = false;
+            return;
+        }
 
         var b = $"companies/{companyId}";
 
         _subs.Add(_repo.Watch<Lead>($"{b}/leads", leads =>
         {
             _leads = leads;
-            MainThread.BeginInvokeOnMainThread(RecomputeLeads);
-        }, ex => MainThread.BeginInvokeOnMainThread(() => Error = Describe(ex))));
+            MainThread.BeginInvokeOnMainThread(Recompute);
+        }, ReportError));
 
         _subs.Add(_repo.Watch<Job>($"{b}/jobs", jobs =>
         {
             _jobs = jobs;
-            MainThread.BeginInvokeOnMainThread(RecomputeJobs);
-        }, ex => MainThread.BeginInvokeOnMainThread(() => Error = Describe(ex))));
+            MainThread.BeginInvokeOnMainThread(Recompute);
+        }, ReportError));
 
         _subs.Add(_repo.Watch<Client>($"{b}/clients", clients =>
         {
             _clients = clients;
-            MainThread.BeginInvokeOnMainThread(() => TotalClients = _clients.Count);
-        }, ex => MainThread.BeginInvokeOnMainThread(() => Error = Describe(ex))));
+            MainThread.BeginInvokeOnMainThread(Recompute);
+        }, ReportError));
     }
 
-    private void RecomputeLeads()
+    private void ReportError(Exception ex) => MainThread.BeginInvokeOnMainThread(() =>
     {
+        IsLoading = false;
+        Error = ex.Message.Contains("PERMISSION", StringComparison.OrdinalIgnoreCase)
+            ? "You don't have access to this company's data."
+            : "Couldn't load data. Check your connection and pull to refresh.";
+    });
+
+    private void Recompute()
+    {
+        IsLoading = false;
+        Error = null;
+
         TotalLeads = _leads.Count;
         OpenLeads = _leads.Count(l => LeadStatuses.IsOpen(l.Status));
+        ActiveJobs = _jobs.Count(j => JobStatuses.IsActive(j.Status));
+        TotalClients = _clients.Count;
 
+        BuildNeedsAction();
+        BuildRecentLeads();
+    }
+
+    private void BuildNeedsAction()
+    {
+        NeedsAction.Clear();
+
+        // Titles come from the company's own pipeline wording, never hardcoded
+        // trade language. This company is an agency, where "Quote scheduled" is
+        // displayed as "Meeting scheduled" — a row reading "quotes to prepare"
+        // would contradict every other screen in the product.
+        var labels = StageLabels.LeadStatusLabels(_session.Company);
+        var newLeads = _leads.Where(l => l.Status == LeadStatuses.New).ToList();
+
+        // Overdue is the sharpest signal, so it goes first and is the only red
+        // item — if everything is red, nothing is.
+        var overdue = newLeads.Where(l => DaysSinceContact(l) >= OverdueAfterDays).ToList();
+        if (overdue.Count > 0)
+        {
+            var oldest = overdue.Max(DaysSinceContact);
+            NeedsAction.Add(ActionItem.Create(
+                overdue.Count,
+                "Overdue for follow-up",
+                oldest == 1 ? "Oldest is 1 day old" : $"Oldest is {oldest} days old",
+                StatusTone.Danger,
+                LeadStatuses.New));
+        }
+
+        var fresh = newLeads.Count - overdue.Count;
+        if (fresh > 0)
+        {
+            NeedsAction.Add(ActionItem.Create(
+                fresh,
+                labels[LeadStatuses.New],
+                "Waiting on a first call",
+                StatusTone.Warning,
+                LeadStatuses.New));
+        }
+
+        var toQuote = _leads.Count(l => l.Status == LeadStatuses.QuoteScheduled);
+        if (toQuote > 0)
+        {
+            NeedsAction.Add(ActionItem.Create(
+                toQuote,
+                labels[LeadStatuses.QuoteScheduled],
+                "Ready for you to prepare",
+                StatusTone.Warning,
+                LeadStatuses.QuoteScheduled));
+        }
+
+        var awaiting = _leads.Count(l => l.Status == LeadStatuses.Quoted);
+        if (awaiting > 0)
+        {
+            NeedsAction.Add(ActionItem.Create(
+                awaiting,
+                labels[LeadStatuses.Quoted],
+                "Waiting on their reply",
+                StatusTone.Warning,
+                LeadStatuses.Quoted));
+        }
+
+        AllCaughtUp = NeedsAction.Count == 0;
+    }
+
+    private void BuildRecentLeads()
+    {
         var labels = StageLabels.LeadStatusLabels(_session.Company);
         RecentLeads.Clear();
-        // Newest last in createdAt-ascending order, so take from the end —
-        // same as the web app's [...leads].reverse().slice(0, 5).
-        foreach (var l in _leads.Reverse().Take(5))
+
+        // Stored ascending by createdAt, so the newest are at the end.
+        foreach (var l in _leads.Reverse().Take(4))
         {
+            var tone = StatusTones.ForLead(l.Status);
             RecentLeads.Add(new LeadRow(
+                l.Id,
                 l.Name,
-                string.IsNullOrWhiteSpace(l.ServiceType) ? "—" : l.ServiceType,
-                labels.TryGetValue(l.Status, out var lab) ? lab : l.Status));
+                string.IsNullOrWhiteSpace(l.ServiceType) ? "No service type yet" : l.ServiceType,
+                labels.TryGetValue(l.Status, out var lab) ? lab : l.Status,
+                StatusTones.Ink(tone),
+                StatusTones.Tint(tone)));
         }
     }
 
-    private void RecomputeJobs()
+    /// <summary>
+    /// Days since first contact. dateContact is a plain "yyyy-MM-dd" string, so
+    /// an unparseable or empty value returns 0 — treated as "not overdue"
+    /// rather than guessing, since a bad date shouldn't manufacture a red alert.
+    /// </summary>
+    private static int DaysSinceContact(Lead lead)
     {
-        TotalJobs = _jobs.Count;
-        ActiveJobs = _jobs.Count(j => JobStatuses.IsActive(j.Status));
-
-        var labels = StageLabels.JobStatusLabels(_session.Company);
-        RecentJobs.Clear();
-        foreach (var j in _jobs.Reverse().Take(5))
-        {
-            RecentJobs.Add(new JobRow(
-                j.JobName,
-                string.IsNullOrWhiteSpace(j.ClientName) ? "—" : j.ClientName,
-                labels.TryGetValue(j.Status, out var lab) ? lab : j.Status));
-        }
+        if (!DateTime.TryParse(lead.DateContact, out var d)) return 0;
+        var days = (DateTime.Today - d.Date).Days;
+        return days < 0 ? 0 : days;
     }
 
-    private static string Describe(Exception ex) =>
-        ex.Message.Contains("PERMISSION", StringComparison.OrdinalIgnoreCase)
-            ? "You don't have access to this company's data."
-            : "Couldn't load data. Check your connection.";
+    private static string GreetingForHour(int hour) => hour switch
+    {
+        < 12 => "Good morning",
+        < 17 => "Good afternoon",
+        _    => "Good evening",
+    };
+
+    [RelayCommand]
+    private static async Task OpenLeadsFilteredAsync(string status)
+    {
+        // Deep-links to the Leads tab with the filter already applied, so an
+        // action row lands on the actual work rather than an unfiltered list.
+        await Shell.Current.GoToAsync($"//leads?status={Uri.EscapeDataString(status)}");
+    }
+
+    [RelayCommand]
+    private static async Task OpenLeadsAsync() => await Shell.Current.GoToAsync("//leads");
 
     public void Dispose()
     {
@@ -113,5 +232,26 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     }
 }
 
-public record LeadRow(string Name, string ServiceType, string StatusLabel);
-public record JobRow(string JobName, string ClientName, string StatusLabel);
+/// <summary>
+/// One row in NEEDS ACTION. Colors are resolved here rather than in XAML
+/// converters so the status palette stays in one place (StatusTones).
+/// </summary>
+public record ActionItem(
+    string CountText,
+    string Title,
+    string Subtitle,
+    Color Ink,
+    Color Tint,
+    string TargetStatus)
+{
+    public static ActionItem Create(int count, string title, string subtitle, StatusTone tone, string targetStatus)
+        => new(count.ToString(), title, subtitle, StatusTones.Ink(tone), StatusTones.Tint(tone), targetStatus);
+}
+
+public record LeadRow(
+    string Id,
+    string Name,
+    string ServiceType,
+    string StatusLabel,
+    Color StatusInk,
+    Color StatusTint);

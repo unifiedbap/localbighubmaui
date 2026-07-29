@@ -6,82 +6,92 @@
     xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
     x:DataType="vm:LeadsViewModel"
     Title="Leads"
-    BackgroundColor="{StaticResource Bg}">
+    BackgroundColor="{StaticResource ColorPageBg}">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-        <!-- Filter chips -->
-        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Padding="12,10">
-            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Filters}" Spacing="8">
+        <!-- ── Filter chips ───────────────────────────────────────────────── -->
+        <ScrollView Grid.Row="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                    Padding="16,12,16,4">
+            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Filters}" Spacing="{StaticResource Space2}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:FilterChip">
-                        <Border Style="{StaticResource ChipBorder}">
+                        <Border
+                            BackgroundColor="{Binding Background}"
+                            Stroke="{Binding BorderColor}"
+                            StrokeThickness="1.5"
+                            StrokeShape="RoundRectangle 22"
+                            Padding="16,0"
+                            MinimumHeightRequest="{StaticResource TouchTarget}"
+                            HeightRequest="44">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LeadsViewModel}}, Path=SelectFilterCommand}"
                                     CommandParameter="{Binding Value}" />
                             </Border.GestureRecognizers>
-                            <Label Text="{Binding Label}" Style="{StaticResource ChipText}" />
+                            <Label
+                                Text="{Binding Label}"
+                                TextColor="{Binding TextColor}"
+                                FontAttributes="{Binding Weight}"
+                                VerticalOptions="Center" />
                         </Border>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- List -->
-        <RefreshView
-            Grid.Row="1"
-            IsRefreshing="{Binding IsRefreshing}"
-            Command="{Binding RefreshCommand}">
+        <!-- Result count + error -->
+        <VerticalStackLayout Grid.Row="1" Padding="16,4,16,8" Spacing="{StaticResource Space2}">
+            <Label Text="{Binding ResultSummary}" Style="{StaticResource TextSectionLabel}" />
+            <Border
+                IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                BackgroundColor="{StaticResource ColorDangerTint}"
+                Stroke="{StaticResource ColorDanger}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                Padding="{StaticResource Space3}">
+                <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- ── List ───────────────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="2" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Leads}">
 
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="30" Spacing="6" VerticalOptions="Center">
+                    <VerticalStackLayout Padding="32" Spacing="{StaticResource Space2}" VerticalOptions="Center">
                         <Label
-                            Text="No leads here yet."
-                            FontSize="16"
-                            TextColor="{StaticResource Text2}"
-                            HorizontalTextAlignment="Center" />
-                        <Label
-                            Text="Tap + to add one."
-                            FontSize="13"
-                            TextColor="{StaticResource Text3}"
+                            Text="{Binding EmptyMessage}"
+                            Style="{StaticResource TextMuted}"
                             HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
 
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:LeadListItem">
-                        <Border Style="{StaticResource ListCardBorder}">
+                        <!-- Whole card is the tap target -->
+                        <Border Style="{StaticResource Card}" Margin="16,0" MinimumHeightRequest="{StaticResource TouchTarget}">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LeadsViewModel}}, Path=OpenEditCommand}"
                                     CommandParameter="{Binding Id}" />
                             </Border.GestureRecognizers>
 
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                <VerticalStackLayout Grid.Column="0" Spacing="3">
-                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource Text}" />
-                                    <Label Text="{Binding ServiceType}" FontSize="13.5" TextColor="{StaticResource Text2}" />
-                                    <Label Text="{Binding Phone}" FontSize="13" TextColor="{StaticResource Text3}" />
-                                    <Label Text="{Binding Location}" FontSize="13" TextColor="{StaticResource Text3}" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                                    <Label Text="{Binding Name}" Style="{StaticResource TextCardPrimary}" />
+                                    <Label Text="{Binding Details}" Style="{StaticResource TextCardSecondary}" />
                                 </VerticalStackLayout>
 
-                                <VerticalStackLayout Grid.Column="1" Spacing="8" HorizontalOptions="End">
-                                    <Border Style="{StaticResource BadgeBorder}">
-                                        <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeText}" />
-                                    </Border>
-                                    <Label
-                                        Text="{Binding DateContact}"
-                                        FontSize="12"
-                                        TextColor="{StaticResource Text3}"
-                                        HorizontalTextAlignment="End" />
-                                    <Button
-                                        Text="Delete"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LeadsViewModel}}, Path=DeleteCommand}"
-                                        CommandParameter="{Binding Id}"
-                                        Style="{StaticResource DangerButtonSmall}" />
-                                </VerticalStackLayout>
+                                <Border Grid.Column="1" BackgroundColor="{Binding StatusTint}"
+                                        StrokeThickness="0" StrokeShape="RoundRectangle 8"
+                                        Padding="10,5" VerticalOptions="Center">
+                                    <Label Text="{Binding StatusLabel}" Style="{StaticResource BadgeLabel}" TextColor="{Binding StatusInk}" />
+                                </Border>
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -89,109 +99,80 @@
             </CollectionView>
         </RefreshView>
 
-        <!-- Add button -->
-        <Button
-            Grid.Row="2"
-            Text="+  Add Lead"
-            Command="{Binding OpenAddCommand}"
-            Margin="16,8,16,16"
-            Style="{StaticResource PrimaryButton}" />
+        <!-- ── One primary action for the screen ──────────────────────────── -->
+        <!-- Bottom margin clears the floating iOS tab bar -->
+        <Button Grid.Row="3" Text="+  Add Lead" Command="{Binding OpenAddCommand}"
+                Margin="16,10,16,68" Style="{StaticResource ButtonPrimary}" />
 
-        <!-- Error toast -->
-        <Label
-            Grid.Row="1"
-            Text="{Binding Error}"
-            IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
-            TextColor="{StaticResource Danger}"
-            BackgroundColor="{StaticResource Surface}"
-            Padding="12"
-            FontSize="13"
-            VerticalOptions="Start" />
+        <!-- ── Editor sheet ───────────────────────────────────────────────── -->
+        <Grid Grid.RowSpan="4" IsVisible="{Binding IsEditorOpen}" BackgroundColor="#99131820">
+            <Border Style="{StaticResource Card}" Margin="16" VerticalOptions="Center" Padding="0">
+                <ScrollView MaximumHeightRequest="620">
+                    <VerticalStackLayout Padding="{StaticResource Space4}" Spacing="{StaticResource Space4}">
 
-        <!-- ── Editor sheet ─────────────────────────────────────────────── -->
-        <Grid
-            Grid.RowSpan="3"
-            IsVisible="{Binding IsEditorOpen}"
-            BackgroundColor="#CC000000">
+                        <Label Text="{Binding EditorTitle}" Style="{StaticResource TextTitle}" />
 
-            <Border
-                Style="{StaticResource CardBorder}"
-                Margin="14"
-                VerticalOptions="Center">
-                <ScrollView MaximumHeightRequest="560">
-                    <VerticalStackLayout Spacing="12">
-
-                        <Label Text="{Binding EditorTitle}" FontSize="19" FontAttributes="Bold" TextColor="{StaticResource Text}" />
-
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="NAME *" Style="{StaticResource FieldLabel}" />
-                            <Entry Text="{Binding FormName}" Placeholder="Full name" Style="{StaticResource FormEntry}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="NAME (REQUIRED)" Style="{StaticResource FormFieldLabel}" />
+                            <Entry Text="{Binding FormName}" Placeholder="Full name or business" Style="{StaticResource FormEntry}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="PHONE" Style="{StaticResource FieldLabel}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="PHONE" Style="{StaticResource FormFieldLabel}" />
                             <Entry Text="{Binding FormPhone}" Keyboard="Telephone" Placeholder="555-555-5555" Style="{StaticResource FormEntry}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="EMAIL" Style="{StaticResource FieldLabel}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="EMAIL" Style="{StaticResource FormFieldLabel}" />
                             <Entry Text="{Binding FormEmail}" Keyboard="Email" Placeholder="email@example.com" Style="{StaticResource FormEntry}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="SERVICE TYPE" Style="{StaticResource FieldLabel}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="SERVICE TYPE" Style="{StaticResource FormFieldLabel}" />
                             <Entry Text="{Binding FormServiceType}" Placeholder="e.g. Electrical, Plumbing" Style="{StaticResource FormEntry}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="LOCATION" Style="{StaticResource FieldLabel}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="LOCATION" Style="{StaticResource FormFieldLabel}" />
                             <Entry Text="{Binding FormLocation}" Placeholder="City or address" Style="{StaticResource FormEntry}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="SOURCE" Style="{StaticResource FieldLabel}" />
-                            <Picker
-                                ItemsSource="{Binding AllSources}"
-                                SelectedItem="{Binding FormSource}"
-                                Style="{StaticResource FormPicker}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="SOURCE" Style="{StaticResource FormFieldLabel}" />
+                            <Picker ItemsSource="{Binding AllSources}" SelectedItem="{Binding FormSource}" Style="{StaticResource FormPicker}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="STATUS" Style="{StaticResource FieldLabel}" />
-                            <!-- Bound to the canonical status values, not the
-                                 display labels — what gets stored must stay the
-                                 canonical string. -->
-                            <Picker
-                                ItemsSource="{Binding AllStatuses}"
-                                SelectedItem="{Binding FormStatus}"
-                                Style="{StaticResource FormPicker}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="STATUS" Style="{StaticResource FormFieldLabel}" />
+                            <!-- Shows this company's wording; stores the canonical value -->
+                            <Picker ItemsSource="{Binding StatusDisplayOptions}" SelectedIndex="{Binding FormStatusIndex}" Style="{StaticResource FormPicker}" />
                         </VerticalStackLayout>
 
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="NOTES" Style="{StaticResource FieldLabel}" />
-                            <Editor Text="{Binding FormNotes}" HeightRequest="82" Style="{StaticResource FormEditor}" />
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="NOTES" Style="{StaticResource FormFieldLabel}" />
+                            <Editor Text="{Binding FormNotes}" Style="{StaticResource FormEditor}" />
                         </VerticalStackLayout>
 
-                        <Label
-                            Text="{Binding FormError}"
+                        <Border
                             IsVisible="{Binding FormError, Converter={StaticResource IsNotNullOrEmpty}}"
-                            TextColor="{StaticResource Danger}"
-                            FontSize="13" />
+                            BackgroundColor="{StaticResource ColorDangerTint}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="{StaticResource Space3}">
+                            <Label Text="{Binding FormError}" TextColor="{StaticResource ColorDanger}" />
+                        </Border>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <Button
-                                Grid.Column="0"
-                                Text="Cancel"
-                                Command="{Binding CloseEditorCommand}"
+                        <!-- Save is the single primary action; Cancel is secondary
+                             and Delete is quiet, so they don't compete with it. -->
+                        <Button Text="Save" Command="{Binding SaveCommand}"
                                 IsEnabled="{Binding Saving, Converter={StaticResource InverseBool}}"
-                                Style="{StaticResource GhostButton}" />
-                            <Button
-                                Grid.Column="1"
-                                Text="Save"
-                                Command="{Binding SaveCommand}"
+                                Style="{StaticResource ButtonPrimary}" />
+                        <Button Text="Cancel" Command="{Binding CloseEditorCommand}"
                                 IsEnabled="{Binding Saving, Converter={StaticResource InverseBool}}"
-                                Style="{StaticResource PrimaryButton}" />
-                        </Grid>
+                                Style="{StaticResource ButtonSecondary}" />
+                        <Button Text="Delete lead" Command="{Binding DeleteCommand}"
+                                IsVisible="{Binding IsEditing}"
+                                Style="{StaticResource ButtonDangerQuiet}" />
 
                     </VerticalStackLayout>
                 </ScrollView>

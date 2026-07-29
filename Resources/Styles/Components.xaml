@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    SHARED COMPONENTS
+    =================
+    Composed entirely from the token dictionaries. Screens should reach for a
+    style here first and only write bespoke XAML when nothing fits — that is
+    what stops each new module from inventing its own card.
+
+    Every interactive style carries MinimumHeightRequest = TouchTarget so the
+    44pt floor is inherited rather than remembered per screen.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ── Cards ─────────────────────────────────────────────────────────── -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="Stroke" Value="{StaticResource ColorBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="{StaticResource CardPadding}" />
+    </Style>
+
+    <!-- Tappable list row. Same look as Card, plus the touch floor. -->
+    <Style x:Key="CardRow" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="Stroke" Value="{StaticResource ColorBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="{StaticResource CardPadding}" />
+        <Setter Property="Margin" Value="{StaticResource CardMargin}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+    </Style>
+
+    <!-- ── Status badges ─────────────────────────────────────────────────── -->
+    <!-- Base carries shape + the touch-irrelevant sizing; the four variants
+         below differ only in the ink/tint pair, so status color stays
+         consistent everywhere it appears. -->
+    <Style x:Key="Badge" TargetType="Border">
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="HorizontalOptions" Value="End" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="BadgeNeutral" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorNeutralTint}" />
+    </Style>
+    <Style x:Key="BadgeSuccess" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSuccessTint}" />
+    </Style>
+    <Style x:Key="BadgeWarning" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorWarningTint}" />
+    </Style>
+    <Style x:Key="BadgeDanger" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorDangerTint}" />
+    </Style>
+
+    <Style x:Key="BadgeLabel" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontLabel}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <!-- ── Buttons ───────────────────────────────────────────────────────── -->
+    <!-- One primary per screen or section, per the brief. -->
+    <Style x:Key="ButtonPrimary" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorAccent}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextOnAccent}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="HeightRequest" Value="50" />
+        <Setter Property="Padding" Value="16,0" />
+    </Style>
+
+    <Style x:Key="ButtonSecondary" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorAccent}" />
+        <Setter Property="BorderColor" Value="{StaticResource ColorBorderStrong}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="HeightRequest" Value="50" />
+        <Setter Property="Padding" Value="16,0" />
+    </Style>
+
+    <!-- Text-weight action, e.g. "See all". Still a full 44pt target. -->
+    <Style x:Key="ButtonLink" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource ColorAccent}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="MinimumWidthRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="Padding" Value="8,0" />
+    </Style>
+
+    <Style x:Key="ButtonDangerQuiet" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource ColorDanger}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="MinimumWidthRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="Padding" Value="8,0" />
+    </Style>
+
+    <!-- ── Form controls ─────────────────────────────────────────────────── -->
+    <Style x:Key="FormEntry" TargetType="Entry">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource ColorTextTertiary}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="HeightRequest" Value="48" />
+    </Style>
+
+    <Style x:Key="FormEditor" TargetType="Editor">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource ColorTextTertiary}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="MinimumHeightRequest" Value="88" />
+    </Style>
+
+    <Style x:Key="FormPicker" TargetType="Picker">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+        <Setter Property="TitleColor" Value="{StaticResource ColorTextTertiary}" />
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="HeightRequest" Value="48" />
+    </Style>
+
+    <Style x:Key="FormFieldLabel" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontLabel}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+    </Style>
+
+    <!-- ── Filter chip ───────────────────────────────────────────────────── -->
+    <Style x:Key="Chip" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
+        <Setter Property="Stroke" Value="{StaticResource ColorBorderStrong}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 22" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="HeightRequest" Value="44" />
+    </Style>
+
+    <Style x:Key="ChipSelected" TargetType="Border" BasedOn="{StaticResource Chip}">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorAccentTint}" />
+        <Setter Property="Stroke" Value="{StaticResource ColorAccent}" />
+        <Setter Property="StrokeThickness" Value="2" />
+    </Style>
+
+    <Style x:Key="ChipLabel" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="ChipLabelSelected" TargetType="Label" BasedOn="{StaticResource ChipLabel}">
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorAccent}" />
+    </Style>
+
+</ResourceDictionary>

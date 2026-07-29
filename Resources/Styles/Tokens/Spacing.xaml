@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    DESIGN TOKEN: Spacing, radius, and touch sizing
+    ==============================================
+    A 4pt scale. Screens compose from these instead of picking arbitrary
+    numbers, which is what keeps rhythm consistent as modules get added.
+
+    TouchTarget (44) is the accessibility floor from the brief and is applied
+    via MinimumHeightRequest / MinimumWidthRequest rather than HeightRequest —
+    a minimum lets a row grow when the user raises their OS text size, whereas
+    a fixed height would clip it.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ── Scale ─────────────────────────────────────────────────────────── -->
+    <x:Double x:Key="Space1">4</x:Double>
+    <x:Double x:Key="Space2">8</x:Double>
+    <x:Double x:Key="Space3">12</x:Double>
+    <x:Double x:Key="Space4">16</x:Double>
+    <x:Double x:Key="Space5">20</x:Double>
+    <x:Double x:Key="Space6">24</x:Double>
+    <x:Double x:Key="Space8">32</x:Double>
+
+    <!-- ── Radius ────────────────────────────────────────────────────────── -->
+    <x:Double x:Key="RadiusSm">8</x:Double>
+    <x:Double x:Key="RadiusMd">12</x:Double>
+    <x:Double x:Key="RadiusLg">16</x:Double>
+    <x:Double x:Key="RadiusPill">999</x:Double>
+
+    <!-- ── Touch ─────────────────────────────────────────────────────────── -->
+    <!-- Minimum interactive size. Applies to buttons, list rows, nav items,
+         and icon affordances alike. -->
+    <x:Double x:Key="TouchTarget">44</x:Double>
+
+    <!-- ── Common thicknesses ────────────────────────────────────────────── -->
+    <Thickness x:Key="PagePadding">16</Thickness>
+    <Thickness x:Key="CardPadding">16</Thickness>
+    <Thickness x:Key="CardMargin">0,0,0,12</Thickness>
+
+</ResourceDictionary>

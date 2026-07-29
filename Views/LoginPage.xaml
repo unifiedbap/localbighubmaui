@@ -6,33 +6,23 @@
     xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
     x:DataType="vm:LoginViewModel"
     Shell.NavBarIsVisible="False"
-    BackgroundColor="{StaticResource Bg}">
+    BackgroundColor="{StaticResource ColorPageBg}">
 
     <ScrollView>
-        <VerticalStackLayout
-            Padding="28"
-            Spacing="16"
-            VerticalOptions="Center">
+        <VerticalStackLayout Padding="24" Spacing="{StaticResource Space4}" VerticalOptions="Center">
 
-            <Label
-                Text="Big Local Hub"
-                FontSize="30"
-                FontAttributes="Bold"
-                TextColor="{StaticResource Text}"
-                HorizontalOptions="Center" />
-
+            <Label Text="Big Local Hub" Style="{StaticResource TextDisplay}" HorizontalOptions="Center" />
             <Label
                 Text="Sign in to your company workspace"
-                FontSize="14"
-                TextColor="{StaticResource Text2}"
+                Style="{StaticResource TextMuted}"
                 HorizontalOptions="Center"
-                Margin="0,0,0,14" />
+                Margin="0,0,0,8" />
 
-            <Border Style="{StaticResource CardBorder}">
-                <VerticalStackLayout Spacing="14">
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="{StaticResource Space4}">
 
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="EMAIL" Style="{StaticResource FieldLabel}" />
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="EMAIL" Style="{StaticResource FormFieldLabel}" />
                         <Entry
                             Text="{Binding Email}"
                             Keyboard="Email"
@@ -41,35 +31,38 @@
                             Style="{StaticResource FormEntry}" />
                     </VerticalStackLayout>
 
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="PASSWORD" Style="{StaticResource FieldLabel}" />
+                    <VerticalStackLayout Spacing="{StaticResource Space1}">
+                        <Label Text="PASSWORD" Style="{StaticResource FormFieldLabel}" />
                         <Entry
                             Text="{Binding Password}"
                             IsPassword="True"
                             IsEnabled="{Binding Busy, Converter={StaticResource InverseBool}}"
-                            Placeholder="••••••••"
+                            Placeholder="Your password"
                             ReturnType="Go"
                             ReturnCommand="{Binding SignInCommand}"
                             Style="{StaticResource FormEntry}" />
                     </VerticalStackLayout>
 
-                    <Label
-                        Text="{Binding Error}"
+                    <Border
                         IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
-                        TextColor="{StaticResource Danger}"
-                        FontSize="13" />
+                        BackgroundColor="{StaticResource ColorDangerTint}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="{StaticResource Space3}">
+                        <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+                    </Border>
 
                     <Button
                         Text="Sign In"
                         Command="{Binding SignInCommand}"
                         IsVisible="{Binding Busy, Converter={StaticResource InverseBool}}"
-                        Style="{StaticResource PrimaryButton}" />
+                        Style="{StaticResource ButtonPrimary}" />
 
                     <ActivityIndicator
                         IsVisible="{Binding Busy}"
                         IsRunning="{Binding Busy}"
-                        Color="{StaticResource Accent}"
-                        HeightRequest="44" />
+                        Color="{StaticResource ColorAccent}"
+                        HeightRequest="50" />
 
                 </VerticalStackLayout>
             </Border>

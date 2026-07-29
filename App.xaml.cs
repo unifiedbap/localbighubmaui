@@ -26,6 +26,13 @@ public partial class App : Application
         _session = session;
         _services = services;
 
+        // Light is the product theme, not merely the default-when-unset: the
+        // hub is read outdoors in direct sun on job sites. Pinning it also
+        // stops the OS dark-mode setting from half-applying to screens whose
+        // tokens only define light values. A dark variant would mean adding
+        // AppThemeBinding pairs across Tokens/Colors.xaml first.
+        UserAppTheme = AppTheme.Light;
+
         _session.SessionChanged += (_, _) =>
             MainThread.BeginInvokeOnMainThread(ApplyRootPage);
     }

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    DESIGN TOKEN: Typography
+    ========================
+    Sizes are in device-independent points and are DELIBERATELY not the whole
+    story: MAUI's FontAutoScalingEnabled defaults to true on Label/Button/Entry,
+    which is what makes these respond to the OS accessibility text-size setting.
+    The base styles below set it explicitly rather than relying on the default,
+    so nobody can quietly regress it.
+
+    That is also why nothing here is expressed as a fixed pixel height and why
+    layouts must not pin heights around text — a user at 200% text size has to
+    get taller rows, not clipped ones.
+
+    Floor is 16 for anything a user reads as content. 14 exists only for badges
+    and section eyebrows, which are short, bold, high-contrast labels rather
+    than body copy.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ── Scale ─────────────────────────────────────────────────────────── -->
+    <x:Double x:Key="FontDisplay">28</x:Double>
+    <x:Double x:Key="FontTitle">22</x:Double>
+    <x:Double x:Key="FontHeading">18</x:Double>
+    <!-- Body floor. Nothing a user reads as content goes below this. -->
+    <x:Double x:Key="FontBody">16</x:Double>
+    <x:Double x:Key="FontLabel">14</x:Double>
+
+    <!-- ── Base text styles ──────────────────────────────────────────────── -->
+    <!-- Implicit style: every Label starts accessible-by-default, so a screen
+         that forgets to pick a style still gets scaling text at a legible size
+         in the primary ink color. -->
+    <Style TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextDisplay" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontDisplay}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextTitle" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontTitle}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextHeading" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontHeading}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <!-- The bold primary line of a list card -->
+    <Style x:Key="TextCardPrimary" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <!-- The muted secondary line of a list card. Same SIZE as the primary line,
+         separated by weight and color instead of by shrinking it — small muted
+         text is exactly what fails for the older end of the user range. -->
+    <Style x:Key="TextCardSecondary" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+    </Style>
+
+    <Style x:Key="TextBody" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
+    </Style>
+
+    <Style x:Key="TextMuted" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontBody}" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+    </Style>
+
+    <!-- Section eyebrow above a group of cards. Not body copy. -->
+    <Style x:Key="TextSectionLabel" TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="True" />
+        <Setter Property="FontSize" Value="{StaticResource FontLabel}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="0.8" />
+        <Setter Property="TextColor" Value="{StaticResource ColorTextSecondary}" />
+    </Style>
+
+</ResourceDictionary>

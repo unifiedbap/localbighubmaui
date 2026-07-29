@@ -7,9 +7,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace BigLocalHub.ViewModels;
 
 /// <summary>
-/// Port of apps/web/src/pages/Leads.tsx (list, filter chips, add/edit/delete).
-/// The spreadsheet-import flow from that page is deliberately not part of this
-/// first pass — see README.
+/// Leads — list, filter, add/edit/delete. Second consumer of the design system
+/// after Dashboard, and the one that proves the card/badge components hold up
+/// on a long scrolling list.
+///
+/// The import flow, cadence engine, and lead→job conversion from the web app
+/// are still out of scope here.
 /// </summary>
 public partial class LeadsViewModel : ObservableObject, IDisposable
 {
@@ -25,14 +28,14 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
     }
 
     public ObservableCollection<LeadListItem> Leads { get; } = [];
-
-    /// <summary>"All" plus each canonical status, shown with this company's wording.</summary>
     public ObservableCollection<FilterChip> Filters { get; } = [];
 
     [ObservableProperty] private string _selectedFilter = "All";
     [ObservableProperty] private bool _isRefreshing;
     [ObservableProperty] private string? _error;
     [ObservableProperty] private bool _isEmpty;
+    [ObservableProperty] private string _emptyMessage = "No leads yet.";
+    [ObservableProperty] private string _resultSummary = string.Empty;
 
     // ── Editor state ────────────────────────────────────────────────────────
     [ObservableProperty] private bool _isEditorOpen;
@@ -47,16 +50,34 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _formSource = LeadSources.Google;
     [ObservableProperty] private string? _formError;
     [ObservableProperty] private bool _saving;
+    [ObservableProperty] private bool _isEditing;
 
     private string? _editingId;
+    private bool _loaded;
 
     public string[] AllSources => LeadSources.All;
-    public string[] AllStatuses => LeadStatuses.All;
+
+    /// <summary>
+    /// Status options for the editor, shown with this company's wording but
+    /// bound by index to the canonical values — what gets STORED must stay the
+    /// canonical string regardless of how it's labelled.
+    /// </summary>
+    public ObservableCollection<string> StatusDisplayOptions { get; } = [];
+
+    [ObservableProperty] private int _formStatusIndex;
 
     private string CollectionPath => $"companies/{_session.CompanyId}/leads";
 
     public void Load()
     {
+        if (_loaded) return;
+        _loaded = true;
+
+        var labels = StageLabels.LeadStatusLabels(_session.Company);
+        StatusDisplayOptions.Clear();
+        foreach (var s in LeadStatuses.All)
+            StatusDisplayOptions.Add(labels.TryGetValue(s, out var l) ? l : s);
+
         BuildFilters();
 
         if (string.IsNullOrWhiteSpace(_session.CompanyId)) return;
@@ -67,22 +88,47 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
             MainThread.BeginInvokeOnMainThread(ApplyFilter);
         }, ex => MainThread.BeginInvokeOnMainThread(() =>
         {
+            IsRefreshing = false;
             Error = ex.Message.Contains("PERMISSION", StringComparison.OrdinalIgnoreCase)
                 ? "You don't have access to these leads."
                 : "Couldn't load leads. Check your connection.";
         }));
     }
 
+    /// <summary>Applied when the Dashboard deep-links in with ?status=…</summary>
+    public void ApplyStatusFilter(string status)
+    {
+        if (LeadStatuses.All.Contains(status) || status == "All")
+            SelectedFilter = status;
+    }
+
     private void BuildFilters()
     {
         var labels = StageLabels.LeadStatusLabels(_session.Company);
         Filters.Clear();
-        Filters.Add(new FilterChip("All", "All"));
+        Filters.Add(MakeChip("All", "All"));
         foreach (var s in LeadStatuses.All)
-            Filters.Add(new FilterChip(s, labels.TryGetValue(s, out var l) ? l : s));
+            Filters.Add(MakeChip(s, labels.TryGetValue(s, out var l) ? l : s));
     }
 
-    partial void OnSelectedFilterChanged(string value) => ApplyFilter();
+    private FilterChip MakeChip(string value, string label)
+    {
+        var selected = value == SelectedFilter;
+        return new FilterChip(
+            value,
+            label,
+            selected,
+            selected ? Tokens.Palette.AccentTint : Tokens.Palette.Surface,
+            selected ? Tokens.Palette.Accent : Tokens.Palette.BorderStrong,
+            selected ? Tokens.Palette.Accent : Tokens.Palette.TextSecondary,
+            selected ? FontAttributes.Bold : FontAttributes.None);
+    }
+
+    partial void OnSelectedFilterChanged(string value)
+    {
+        BuildFilters();
+        ApplyFilter();
+    }
 
     private void ApplyFilter()
     {
@@ -92,22 +138,40 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
             : _all.Where(l => l.Status == SelectedFilter).ToList();
 
         Leads.Clear();
-        // Newest first reads better on a phone than the stored ascending order.
+        // Newest first — on a phone the top of the list is the cheapest place
+        // to look, and the newest lead is the one most likely to need action.
         foreach (var l in filtered.Reverse())
         {
+            var tone = StatusTones.ForLead(l.Status);
             Leads.Add(new LeadListItem(
                 l.Id,
                 l.Name,
-                string.IsNullOrWhiteSpace(l.Phone) ? "—" : l.Phone,
-                string.IsNullOrWhiteSpace(l.ServiceType) ? "—" : l.ServiceType,
-                string.IsNullOrWhiteSpace(l.Location) ? "—" : l.Location,
-                string.IsNullOrWhiteSpace(l.DateContact) ? "—" : l.DateContact,
+                BuildSecondaryLine(l),
                 labels.TryGetValue(l.Status, out var lab) ? lab : l.Status,
-                l.Status));
+                StatusTones.Ink(tone),
+                StatusTones.Tint(tone)));
         }
 
         IsEmpty = Leads.Count == 0;
+        EmptyMessage = SelectedFilter == "All"
+            ? "No leads yet. Tap Add Lead to create the first one."
+            : $"No leads with status \"{(labels.TryGetValue(SelectedFilter, out var sl) ? sl : SelectedFilter)}\".";
+
+        ResultSummary = Leads.Count == 1 ? "1 lead" : $"{Leads.Count} leads";
         IsRefreshing = false;
+    }
+
+    /// <summary>
+    /// One muted line combining the details worth scanning. Built here rather
+    /// than stacking three separate labels, which on a small screen turns the
+    /// list into a wall of low-contrast text.
+    /// </summary>
+    private static string BuildSecondaryLine(Lead l)
+    {
+        var parts = new[] { l.ServiceType, l.Location, l.Phone }
+            .Where(p => !string.IsNullOrWhiteSpace(p));
+        var line = string.Join("  ·  ", parts);
+        return string.IsNullOrWhiteSpace(line) ? "No details yet" : line;
     }
 
     [RelayCommand]
@@ -117,9 +181,11 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
     private void OpenAdd()
     {
         _editingId = null;
+        IsEditing = false;
         EditorTitle = "Add Lead";
         FormName = FormPhone = FormEmail = FormServiceType = FormLocation = FormNotes = string.Empty;
         FormStatus = LeadStatuses.New;
+        FormStatusIndex = 0;
         FormSource = LeadSources.Google;
         FormError = null;
         IsEditorOpen = true;
@@ -132,6 +198,7 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
         if (lead is null) return;
 
         _editingId = lead.Id;
+        IsEditing = true;
         EditorTitle = "Edit Lead";
         FormName = lead.Name;
         FormPhone = lead.Phone;
@@ -140,6 +207,7 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
         FormLocation = lead.Location;
         FormNotes = lead.Notes;
         FormStatus = lead.Status;
+        FormStatusIndex = Math.Max(0, Array.IndexOf(LeadStatuses.All, lead.Status));
         FormSource = lead.Source;
         FormError = null;
         IsEditorOpen = true;
@@ -158,6 +226,12 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
             return;
         }
 
+        // The picker binds by index against the display labels; translate back
+        // to the canonical stored value.
+        var status = FormStatusIndex >= 0 && FormStatusIndex < LeadStatuses.All.Length
+            ? LeadStatuses.All[FormStatusIndex]
+            : LeadStatuses.New;
+
         Saving = true;
         FormError = null;
         try
@@ -173,7 +247,7 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
                     ServiceType = FormServiceType.Trim(),
                     Location = FormLocation.Trim(),
                     DateContact = DateTime.Now.ToString("yyyy-MM-dd"),
-                    Status = FormStatus,
+                    Status = status,
                     Notes = FormNotes.Trim(),
                 });
             }
@@ -181,8 +255,7 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
             {
                 // Field-level update, never a whole-document set — this model
                 // maps only part of the lead, and a set would wipe the cadence
-                // fields, portal links, and import batch id the rest of the
-                // system depends on.
+                // fields, portal links, and import batch id.
                 await _repo.UpdateAsync(CollectionPath, _editingId,
                     ("name", FormName.Trim()),
                     ("phone", FormPhone.Trim()),
@@ -190,7 +263,7 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
                     ("source", FormSource),
                     ("serviceType", FormServiceType.Trim()),
                     ("location", FormLocation.Trim()),
-                    ("status", FormStatus),
+                    ("status", status),
                     ("notes", FormNotes.Trim()));
             }
 
@@ -207,9 +280,10 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task DeleteAsync(string id)
+    private async Task DeleteAsync()
     {
-        var lead = _all.FirstOrDefault(l => l.Id == id);
+        if (_editingId is null) return;
+        var lead = _all.FirstOrDefault(l => l.Id == _editingId);
         if (lead is null) return;
 
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;
@@ -224,11 +298,12 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
 
         try
         {
-            await _repo.RemoveAsync(CollectionPath, id);
+            await _repo.RemoveAsync(CollectionPath, _editingId);
+            IsEditorOpen = false;
         }
         catch (Exception ex)
         {
-            Error = $"Couldn't delete: {ex.Message}";
+            FormError = $"Couldn't delete: {ex.Message}";
         }
     }
 
@@ -246,11 +321,16 @@ public partial class LeadsViewModel : ObservableObject, IDisposable
 public record LeadListItem(
     string Id,
     string Name,
-    string Phone,
-    string ServiceType,
-    string Location,
-    string DateContact,
+    string Details,
     string StatusLabel,
-    string RawStatus);
+    Color StatusInk,
+    Color StatusTint);
 
-public record FilterChip(string Value, string Label);
+public record FilterChip(
+    string Value,
+    string Label,
+    bool IsSelected,
+    Color Background,
+    Color BorderColor,
+    Color TextColor,
+    FontAttributes Weight);

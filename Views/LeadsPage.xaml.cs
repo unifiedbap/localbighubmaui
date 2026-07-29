@@ -2,10 +2,13 @@ using BigLocalHub.ViewModels;
 
 namespace BigLocalHub.Views;
 
-public partial class LeadsPage : ContentPage
+/// <summary>
+/// Accepts ?status=… so the Dashboard's NEEDS ACTION rows can deep-link
+/// straight into the matching filter.
+/// </summary>
+public partial class LeadsPage : ContentPage, IQueryAttributable
 {
     private readonly LeadsViewModel _vm;
-    private bool _loaded;
 
     public LeadsPage(LeadsViewModel vm)
     {
@@ -16,8 +19,18 @@ public partial class LeadsPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        if (_loaded) return;
-        _loaded = true;
+        // Load() guards itself, so repeated tab visits don't stack listeners.
         _vm.Load();
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        // Shell keeps this page alive between tab switches, so the filter is
+        // applied on every navigation rather than only on first construction.
+        if (query.TryGetValue("status", out var raw) && raw is string status && !string.IsNullOrWhiteSpace(status))
+        {
+            _vm.Load();
+            _vm.ApplyStatusFilter(Uri.UnescapeDataString(status));
+        }
     }
 }

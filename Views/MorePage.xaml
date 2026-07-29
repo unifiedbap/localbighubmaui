@@ -6,68 +6,113 @@
     xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
     x:DataType="vm:MoreViewModel"
     Title="More"
-    BackgroundColor="{StaticResource Bg}">
+    BackgroundColor="{StaticResource ColorPageBg}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="14">
+        <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource Space6}">
 
-            <Border Style="{StaticResource CardBorder}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Account" Style="{StaticResource SectionTitle}" />
+            <!-- ── Account ────────────────────────────────────────────────── -->
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="{StaticResource Space4}">
+                    <Border
+                        Grid.Column="0"
+                        BackgroundColor="{StaticResource ColorAccentTint}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 28"
+                        WidthRequest="56"
+                        HeightRequest="56"
+                        VerticalOptions="Center">
+                        <Label
+                            Text="{Binding Initials}"
+                            Style="{StaticResource TextHeading}"
+                            TextColor="{StaticResource ColorAccent}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+                    </Border>
 
-                    <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="7">
-                        <Label Grid.Row="0" Grid.Column="0" Text="Company" Style="{StaticResource StatSub}" />
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding CompanyName}" FontSize="14" TextColor="{StaticResource Text}" />
-
-                        <Label Grid.Row="1" Grid.Column="0" Text="Name" Style="{StaticResource StatSub}" />
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding UserName}" FontSize="14" TextColor="{StaticResource Text}" />
-
-                        <Label Grid.Row="2" Grid.Column="0" Text="Email" Style="{StaticResource StatSub}" />
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding UserEmail}" FontSize="14" TextColor="{StaticResource Text}" />
-
-                        <Label Grid.Row="3" Grid.Column="0" Text="Role" Style="{StaticResource StatSub}" />
-                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding RoleLabel}" FontSize="14" TextColor="{StaticResource Text}" />
-                    </Grid>
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Style="{StaticResource CardBorder}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Pipeline Wording" Style="{StaticResource SectionTitle}" />
-                    <Label Text="{Binding PipelineStyle}" FontSize="14" TextColor="{StaticResource Text}" />
-                    <Label
-                        Text="Stage names shown across Leads and Jobs come from this company's business type, with any per-company overrides applied. The stored status values never change."
-                        FontSize="12.5"
-                        TextColor="{StaticResource Text3}" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Style="{StaticResource CardBorder}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Modules" Style="{StaticResource SectionTitle}" />
-                    <Label
-                        Text="Enabled for this company. This MAUI build is a first pass — modules marked otherwise are still web/mobile only."
-                        FontSize="12.5"
-                        TextColor="{StaticResource Text3}" />
-
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ModuleRows}" Spacing="0">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="vm:ModuleRow">
-                                <Grid ColumnDefinitions="*,Auto" Padding="0,7">
-                                    <Label Grid.Column="0" Text="{Binding Label}" FontSize="14" TextColor="{StaticResource Text}" />
-                                    <Label Grid.Column="1" Text="{Binding Availability}" FontSize="12" TextColor="{StaticResource Text3}" />
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                        <Label Text="{Binding UserName}" Style="{StaticResource TextHeading}" />
+                        <Label Text="{Binding UserEmail}" Style="{StaticResource TextCardSecondary}" />
+                        <Label Text="{Binding CompanyName}" Style="{StaticResource TextCardSecondary}" />
                     </VerticalStackLayout>
-                </VerticalStackLayout>
+                </Grid>
             </Border>
 
-            <Button
-                Text="Sign Out"
-                Command="{Binding SignOutCommand}"
-                Style="{StaticResource GhostButton}"
-                Margin="0,4,0,20" />
+            <!-- ── Module launcher ────────────────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}">
+                <Label Text="ALL MODULES" Style="{StaticResource TextSectionLabel}" />
+
+                <!-- Icon + label tiles. Three columns keeps each tile well past
+                     the 44pt touch floor on the narrowest supported phone. -->
+                <FlexLayout
+                    BindableLayout.ItemsSource="{Binding Tiles}"
+                    Wrap="Wrap"
+                    JustifyContent="Start"
+                    AlignItems="Start">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ModuleTile">
+                            <Border
+                                Style="{StaticResource Card}"
+                                WidthRequest="104"
+                                MinimumHeightRequest="104"
+                                Margin="0,0,10,10"
+                                Padding="{StaticResource Space2}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MoreViewModel}}, Path=OpenModuleCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+
+                                <VerticalStackLayout Spacing="{StaticResource Space2}" VerticalOptions="Center">
+                                    <Image
+                                        Source="{Binding Icon}"
+                                        WidthRequest="30"
+                                        HeightRequest="30"
+                                        HorizontalOptions="Center" />
+                                    <Label
+                                        Text="{Binding Label}"
+                                        TextColor="{Binding LabelColor}"
+                                        FontSize="{StaticResource FontLabel}"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center"
+                                        LineBreakMode="WordWrap" />
+                                    <Label
+                                        Text="{Binding Note}"
+                                        IsVisible="{Binding Note, Converter={StaticResource IsNotNullOrEmpty}}"
+                                        TextColor="{StaticResource ColorTextTertiary}"
+                                        FontSize="{StaticResource FontLabel}"
+                                        HorizontalTextAlignment="Center"
+                                        LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+            </VerticalStackLayout>
+
+            <!-- ── Settings detail ────────────────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}">
+                <Label Text="WORKSPACE" Style="{StaticResource TextSectionLabel}" />
+
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="{StaticResource Space3}">
+                        <Grid ColumnDefinitions="120,*">
+                            <Label Grid.Column="0" Text="Role" Style="{StaticResource TextCardSecondary}" />
+                            <Label Grid.Column="1" Text="{Binding RoleLabel}" Style="{StaticResource TextBody}" />
+                        </Grid>
+                        <Grid ColumnDefinitions="120,*">
+                            <Label Grid.Column="0" Text="Pipeline" Style="{StaticResource TextCardSecondary}" />
+                            <Label Grid.Column="1" Text="{Binding PipelineStyle}" Style="{StaticResource TextBody}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- One primary action for this screen -->
+            <Button Text="Sign Out" Command="{Binding SignOutCommand}" Style="{StaticResource ButtonSecondary}" />
+
+            <!-- Clearance for the floating iOS tab bar, which overlays page content -->
+            <BoxView HeightRequest="72" Color="Transparent" />
 
         </VerticalStackLayout>
     </ScrollView>
