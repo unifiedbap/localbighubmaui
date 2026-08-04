@@ -38,10 +38,15 @@
         <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
     </Style>
 
+    <!-- CharacterSpacing on the three biggest sizes only — a small negative
+         tracking is a standard way to make large bold type read as crisper
+         and more current instead of loose/dated. Never applied to body/label
+         sizes, where tight tracking hurts legibility instead of helping it. -->
     <Style x:Key="TextDisplay" TargetType="Label">
         <Setter Property="FontAutoScalingEnabled" Value="True" />
         <Setter Property="FontSize" Value="{StaticResource FontDisplay}" />
         <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.4" />
         <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
     </Style>
 
@@ -49,6 +54,7 @@
         <Setter Property="FontAutoScalingEnabled" Value="True" />
         <Setter Property="FontSize" Value="{StaticResource FontTitle}" />
         <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.3" />
         <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
     </Style>
 
@@ -56,6 +62,7 @@
         <Setter Property="FontAutoScalingEnabled" Value="True" />
         <Setter Property="FontSize" Value="{StaticResource FontHeading}" />
         <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="-0.2" />
         <Setter Property="TextColor" Value="{StaticResource ColorTextPrimary}" />
     </Style>
 

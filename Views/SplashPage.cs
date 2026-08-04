@@ -59,7 +59,7 @@ public class NoticePage : ContentPage
             FontSize = Tokens.Type.Body,
             FontAttributes = FontAttributes.Bold,
             FontAutoScalingEnabled = true,
-            CornerRadius = 12,
+            CornerRadius = 16, // matches ButtonSecondary in Components.xaml
             MinimumHeightRequest = Tokens.TouchTarget,
             HeightRequest = 50,
         };

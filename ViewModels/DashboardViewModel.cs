@@ -160,10 +160,9 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     // manual scan, never mid-session on its own.
     [ObservableProperty] private bool _showSeoWidget;
     [ObservableProperty] private bool _hasSeoScore;
-    [ObservableProperty] private string _seoScoreText = string.Empty;
+    [ObservableProperty] private int _seoScore;
     [ObservableProperty] private string _seoScoreLabel = string.Empty;
     [ObservableProperty] private Color _seoScoreInk = Tokens.Palette.Neutral;
-    [ObservableProperty] private Color _seoScoreTint = Tokens.Palette.NeutralTint;
     [ObservableProperty] private string _seoLastCheckedText = "Not checked yet";
     [ObservableProperty] private bool _isScanningSeo;
     [ObservableProperty] private string _seoScanButtonText = "Scan now";
@@ -232,17 +231,16 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         HasSeoScore = doc is not null;
         if (doc is null)
         {
-            SeoScoreText = "—";
+            SeoScore = 0;
             SeoScoreLabel = "No scan yet";
             SeoLastCheckedText = "Tap Scan now to check your site";
             return;
         }
 
-        SeoScoreText = doc.Score.ToString();
+        SeoScore = doc.Score;
         SeoScoreLabel = doc.ScoreLabel;
         var tone = SeoHealthTones.ForScoreLabel(doc.ScoreLabel);
         SeoScoreInk = StatusTones.Ink(tone);
-        SeoScoreTint = StatusTones.Tint(tone);
         SeoLastCheckedText = $"Last checked {doc.LastChecked.ToLocalTime():MMM d}";
     }
 

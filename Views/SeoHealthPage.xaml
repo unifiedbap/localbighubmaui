@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    xmlns:controls="clr-namespace:BigLocalHub.Views.Controls"
     x:DataType="vm:SeoHealthViewModel"
     Title="SEO Health"
     BackgroundColor="{StaticResource ColorPageBg}">
@@ -45,25 +46,35 @@
                     </Border>
 
                     <!-- ── Score ──────────────────────────────────────────────── -->
+                    <!-- Semi-circle gauge: 0 at the left, 100 at the right, filled
+                         to the current score in its tone color. The score number
+                         sits in the empty space the arc encloses, the way most
+                         gauge dials place their reading. -->
                     <Border Style="{StaticResource Card}" IsVisible="{Binding HasScore}">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="{StaticResource Space4}">
-                            <Border Grid.Column="0" BackgroundColor="{Binding ScoreTint}" StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 44" WidthRequest="88" HeightRequest="88"
-                                    VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="{StaticResource Space2}">
+                            <Grid WidthRequest="240" HeightRequest="150" HorizontalOptions="Center">
+                                <controls:ScoreGaugeView
+                                    Score="{Binding Score}"
+                                    TrackColor="{StaticResource ColorNeutralTint}"
+                                    FillColor="{Binding ScoreInk}"
+                                    ArcThickness="20"
+                                    WidthRequest="240" HeightRequest="140"
+                                    VerticalOptions="Start" />
                                 <Label Text="{Binding Score}" Style="{StaticResource TextDisplay}"
                                        TextColor="{Binding ScoreInk}"
-                                       HorizontalOptions="Center" VerticalOptions="Center" />
-                            </Border>
+                                       HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,6" />
+                            </Grid>
 
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="{StaticResource Space1}">
-                                <Label Text="{Binding ScoreLabel}" Style="{StaticResource TextHeading}" TextColor="{Binding ScoreInk}" />
-                                <Label Text="{Binding LastCheckedText}" Style="{StaticResource TextCaption}" />
-                                <HorizontalStackLayout IsVisible="{Binding HasTrend}" Spacing="4">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="{StaticResource Space1}">
+                                <Label Text="{Binding ScoreLabel}" Style="{StaticResource TextHeading}"
+                                       TextColor="{Binding ScoreInk}" HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding LastCheckedText}" Style="{StaticResource TextCaption}" HorizontalTextAlignment="Center" />
+                                <HorizontalStackLayout IsVisible="{Binding HasTrend}" Spacing="4" HorizontalOptions="Center">
                                     <Label Text="{Binding TrendArrow}" TextColor="{Binding TrendColor}" FontAttributes="Bold" />
                                     <Label Text="{Binding TrendText}" Style="{StaticResource TextCaption}" TextColor="{Binding TrendColor}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
-                        </Grid>
+                        </VerticalStackLayout>
                     </Border>
 
                     <!-- Manual scan — server-side rate-limited, so this can be
