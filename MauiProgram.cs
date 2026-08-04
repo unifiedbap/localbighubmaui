@@ -9,7 +9,6 @@ using Plugin.Firebase.Firestore;
 
 #if IOS
 using Plugin.Firebase.Core.Platforms.iOS;
-using UIKit;
 #elif ANDROID
 using Plugin.Firebase.Core.Platforms.Android;
 #endif
@@ -89,32 +88,14 @@ public static class MauiProgram
         builder.ConfigureLifecycleEvents(events =>
         {
 #if IOS
-            events.AddiOS(iOS =>
+            events.AddiOS(iOS => iOS.WillFinishLaunching((_, __) =>
             {
-                iOS.WillFinishLaunching((_, __) =>
-                {
-                    CrossFirebase.Initialize();
-                    return false;
-                });
-
-                // DIAGNOSTIC BUILD — not the real fix. Magenta instead of
-                // white so it's obvious from a screenshot alone whether
-                // setting UIApplication.SharedApplication.KeyWindow's
-                // background does anything at all to the black area behind
-                // the tab bar. If the bar turns magenta: this IS the right
-                // view, and the real fix is just swapping this color back to
-                // white. If it stays black: KeyWindow is probably null at
-                // FinishedLaunching (a scene-based app lifecycle, common on
-                // recent iOS/MAUI, doesn't have a window yet at this point)
-                // and the fix needs to hook a later/different lifecycle event
-                // instead — worth knowing before guessing again.
-                iOS.FinishedLaunching((_, __) =>
-                {
-                    if (UIApplication.SharedApplication.KeyWindow is { } window)
-                        window.BackgroundColor = UIColor.Magenta;
-                    return true;
-                });
-            });
+                CrossFirebase.Initialize();
+                return false;
+            }));
+            // Black-bar diagnostic attempt #1 (KeyWindow in FinishedLaunching)
+            // lived here and confirmed to do nothing — see App.xaml.cs
+            // CreateWindow for attempt #2.
 #elif ANDROID
             events.AddAndroid(android => android.OnCreate((activity, _) =>
                 CrossFirebase.Initialize(activity)));
