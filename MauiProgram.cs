@@ -93,9 +93,6 @@ public static class MauiProgram
                 CrossFirebase.Initialize();
                 return false;
             }));
-            // Black-bar diagnostic attempt #1 (KeyWindow in FinishedLaunching)
-            // lived here and confirmed to do nothing — see App.xaml.cs
-            // CreateWindow for attempt #2.
 #elif ANDROID
             events.AddAndroid(android => android.OnCreate((activity, _) =>
                 CrossFirebase.Initialize(activity)));

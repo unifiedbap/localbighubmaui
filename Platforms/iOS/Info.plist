@@ -32,5 +32,16 @@
 	<string>Big Local Hub adds your upcoming jobs and quote appointments to your calendar.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Big Local Hub adds your upcoming jobs and quote appointments to your calendar, and checks for ones it already added so it doesn't create duplicates.</string>
+	<!-- App.xaml.cs sets UserAppTheme = AppTheme.Light, but that only
+	     controls which AppThemeBinding values MAUI's own XAML resolves to —
+	     it does not force native, system-rendered chrome into light mode.
+	     Without this key, a device/simulator in Dark Mode still renders
+	     native materials that don't go through AppThemeBinding (e.g. the
+	     blur/vibrancy backdrop behind iOS 18's floating tab bar) dark,
+	     regardless of any BackgroundColor set in C# — which is the likely
+	     real cause of a black bar behind the tab bar that two different
+	     UIWindow.BackgroundColor fixes both failed to change. -->
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 </dict>
 </plist>

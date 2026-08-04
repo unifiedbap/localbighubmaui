@@ -40,35 +40,11 @@ public partial class App : Application
     protected override Window CreateWindow(IActivationState? activationState)
     {
         _window = new Window(BuildRootPage());
-#if IOS
-        // Attempt #2 at the black-bar fix — attempt #1 (setting
-        // UIApplication.SharedApplication.KeyWindow's background in
-        // MauiProgram's FinishedLaunching hook) confirmed to do nothing,
-        // meaning KeyWindow was null there (this app uses iOS's scene-based
-        // lifecycle, where the window doesn't exist that early). This hooks
-        // MAUI's own Window.HandlerChanged instead, which only fires once
-        // the real native UIWindow has actually been created — no timing
-        // guesswork about AppDelegate/scene lifecycle order.
-        _window.HandlerChanged += OnWindowHandlerChanged;
-#endif
         // Start listening only after the window exists, so the first callback
         // has somewhere to swap a page into.
         _session.Start();
         return _window;
     }
-
-#if IOS
-    /// <summary>
-    /// DIAGNOSTIC — magenta instead of white on purpose, so it's obvious
-    /// from a screenshot whether this is the view behind the reported black
-    /// bar before committing to it as the real fix.
-    /// </summary>
-    private static void OnWindowHandlerChanged(object? sender, EventArgs e)
-    {
-        if (sender is Window { Handler.PlatformView: UIKit.UIWindow uiWindow })
-            uiWindow.BackgroundColor = UIKit.UIColor.Magenta;
-    }
-#endif
 
     private void ApplyRootPage()
     {
