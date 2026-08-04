@@ -43,7 +43,6 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
     [ObservableProperty] private int _score;
     [ObservableProperty] private string _scoreLabel = string.Empty;
     [ObservableProperty] private Color _scoreInk = Tokens.Palette.Neutral;
-    [ObservableProperty] private Color _scoreTint = Tokens.Palette.NeutralTint;
     [ObservableProperty] private string _lastCheckedText = string.Empty;
 
     [ObservableProperty] private bool _hasTrend;
@@ -146,7 +145,6 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
 
         var tone = SeoHealthTones.ForScoreLabel(doc.ScoreLabel);
         ScoreInk = StatusTones.Ink(tone);
-        ScoreTint = StatusTones.Tint(tone);
 
         LastCheckedText = $"Last checked {doc.LastChecked.ToLocalTime():MMM d}";
 

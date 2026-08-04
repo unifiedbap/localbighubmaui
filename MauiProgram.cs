@@ -9,6 +9,7 @@ using Plugin.Firebase.Firestore;
 
 #if IOS
 using Plugin.Firebase.Core.Platforms.iOS;
+using UIKit;
 #elif ANDROID
 using Plugin.Firebase.Core.Platforms.Android;
 #endif
@@ -88,11 +89,28 @@ public static class MauiProgram
         builder.ConfigureLifecycleEvents(events =>
         {
 #if IOS
-            events.AddiOS(iOS => iOS.WillFinishLaunching((_, __) =>
+            events.AddiOS(iOS =>
             {
-                CrossFirebase.Initialize();
-                return false;
-            }));
+                iOS.WillFinishLaunching((_, __) =>
+                {
+                    CrossFirebase.Initialize();
+                    return false;
+                });
+
+                // Best-effort fix for a black bar behind iOS 18's floating/
+                // inset tab bar: that new style leaves a real gap around the
+                // pill down to the screen edge (including under the home
+                // indicator), and that gap is the raw UIWindow background —
+                // no MAUI Shell/Page BackgroundColor property paints it, so
+                // it defaults to black unless set natively. Matches the
+                // app's white surface (ColorSurface) instead.
+                iOS.FinishedLaunching((_, __) =>
+                {
+                    if (UIApplication.SharedApplication.KeyWindow is { } window)
+                        window.BackgroundColor = UIColor.White;
+                    return true;
+                });
+            });
 #elif ANDROID
             events.AddAndroid(android => android.OnCreate((activity, _) =>
                 CrossFirebase.Initialize(activity)));

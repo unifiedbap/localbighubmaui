@@ -10,6 +10,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    xmlns:controls="clr-namespace:BigLocalHub.Views.Controls"
     x:DataType="vm:DashboardViewModel"
     Title="Dashboard"
     BackgroundColor="{StaticResource ColorPageBg}">
@@ -240,13 +241,21 @@
                         <TapGestureRecognizer Command="{Binding OpenSeoHealthCommand}" />
                     </Border.GestureRecognizers>
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{StaticResource Space3}">
-                        <Border Grid.Column="0" BackgroundColor="{Binding SeoScoreTint}" StrokeThickness="0"
-                                StrokeShape="RoundRectangle 28" WidthRequest="56" HeightRequest="56"
-                                VerticalOptions="Center">
-                            <Label Text="{Binding SeoScoreText}" Style="{StaticResource TextHeading}"
+                        <!-- Compact version of the same gauge on SeoHealthPage —
+                             no arc at all when there's no score yet, so it
+                             never misreads as an actual 0/100 result. -->
+                        <Grid Grid.Column="0" WidthRequest="90" HeightRequest="60" IsVisible="{Binding HasSeoScore}">
+                            <controls:ScoreGaugeView
+                                Score="{Binding SeoScore}"
+                                TrackColor="{StaticResource ColorNeutralTint}"
+                                FillColor="{Binding SeoScoreInk}"
+                                ArcThickness="10"
+                                WidthRequest="90" HeightRequest="54"
+                                VerticalOptions="Start" />
+                            <Label Text="{Binding SeoScore}" Style="{StaticResource TextCardPrimary}"
                                    TextColor="{Binding SeoScoreInk}"
-                                   HorizontalOptions="Center" VerticalOptions="Center" />
-                        </Border>
+                                   HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,2" />
+                        </Grid>
 
                         <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="{StaticResource Space1}">
                             <Label Text="{Binding SeoScoreLabel}" Style="{StaticResource TextCardPrimary}" />

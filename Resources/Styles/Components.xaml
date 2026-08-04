@@ -13,13 +13,23 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- ── Elevation ─────────────────────────────────────────────────────── -->
+    <!-- Deliberately subtle: this app is read outdoors in direct sun, where a
+         heavy shadow either disappears (too light) or reads as a smudge (too
+         dark). Low opacity + soft radius gives cards a lifted, contemporary
+         edge without competing with the WCAG-checked ink colors that do the
+         actual contrast work. -->
+    <Shadow x:Key="CardShadow" Brush="{StaticResource ColorTextPrimary}" Opacity="0.08" Radius="14" Offset="0,4" />
+    <Shadow x:Key="ButtonShadow" Brush="{StaticResource ColorAccent}" Opacity="0.28" Radius="10" Offset="0,3" />
+
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
         <Setter Property="Stroke" Value="{StaticResource ColorBorder}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
         <Setter Property="Padding" Value="{StaticResource CardPadding}" />
+        <Setter Property="Shadow" Value="{StaticResource CardShadow}" />
     </Style>
 
     <!-- Tappable list row. Same look as Card, plus the touch floor. -->
@@ -27,10 +37,11 @@
         <Setter Property="BackgroundColor" Value="{StaticResource ColorSurface}" />
         <Setter Property="Stroke" Value="{StaticResource ColorBorder}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
         <Setter Property="Padding" Value="{StaticResource CardPadding}" />
         <Setter Property="Margin" Value="{StaticResource CardMargin}" />
         <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
+        <Setter Property="Shadow" Value="{StaticResource CardShadow}" />
     </Style>
 
     <!-- ── Status badges ─────────────────────────────────────────────────── -->
@@ -39,7 +50,7 @@
          consistent everywhere it appears. -->
     <Style x:Key="Badge" TargetType="Border">
         <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
         <Setter Property="Padding" Value="10,5" />
         <Setter Property="HorizontalOptions" Value="End" />
         <Setter Property="VerticalOptions" Value="Center" />
@@ -72,10 +83,11 @@
         <Setter Property="FontAutoScalingEnabled" Value="True" />
         <Setter Property="FontSize" Value="{StaticResource FontBody}" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
         <Setter Property="HeightRequest" Value="50" />
         <Setter Property="Padding" Value="16,0" />
+        <Setter Property="Shadow" Value="{StaticResource ButtonShadow}" />
         <!-- A custom BackgroundColor overrides MAUI's default disabled
              appearance, so a disabled button would otherwise look identical to
              an enabled one. -->
@@ -87,6 +99,7 @@
                         <VisualState.Setters>
                             <Setter Property="BackgroundColor" Value="{StaticResource ColorBorderStrong}" />
                             <Setter Property="TextColor" Value="{StaticResource ColorSurface}" />
+                            <Setter Property="Shadow" Value="{x:Null}" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -102,7 +115,7 @@
         <Setter Property="FontAutoScalingEnabled" Value="True" />
         <Setter Property="FontSize" Value="{StaticResource FontBody}" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="MinimumHeightRequest" Value="{StaticResource TouchTarget}" />
         <Setter Property="HeightRequest" Value="50" />
         <Setter Property="Padding" Value="16,0" />
