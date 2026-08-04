@@ -145,7 +145,7 @@
                             Style="{StaticResource ButtonLink}" />
                 </Grid>
 
-                <!-- Normal state: four big icon + label targets -->
+                <!-- Normal state: six big icon + label targets -->
                 <Grid IsVisible="{Binding IsCustomizing, Converter={StaticResource InverseBool}}">
                     <FlexLayout BindableLayout.ItemsSource="{Binding QuickActions}" Wrap="Wrap" JustifyContent="SpaceBetween">
                         <BindableLayout.ItemTemplate>
@@ -180,7 +180,7 @@
                     </FlexLayout>
                 </Grid>
 
-                <!-- Edit state: pick which modules occupy the four slots -->
+                <!-- Edit state: pick which modules occupy the six slots -->
                 <VerticalStackLayout IsVisible="{Binding IsCustomizing}" Spacing="{StaticResource Space3}">
                     <Label Text="{Binding CustomizeHint}" Style="{StaticResource TextCardSecondary}" />
 
