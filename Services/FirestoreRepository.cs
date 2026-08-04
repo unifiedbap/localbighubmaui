@@ -55,6 +55,18 @@ public class FirestoreRepository
                       });
     }
 
+    /// <summary>
+    /// One-shot read of a single document, for screens backed by one doc per
+    /// tenant (e.g. seoHealth/{companyId}) rather than a collection. Returns
+    /// null if the document doesn't exist yet — e.g. a company that hasn't
+    /// had its first scheduled scan.
+    /// </summary>
+    public async Task<T?> GetDocAsync<T>(string documentPath) where T : FirestoreDocument
+    {
+        var snap = await _db.GetDocument(documentPath).GetDocumentSnapshotAsync<T>();
+        return snap.Data;
+    }
+
     /// <summary>One-shot read, for cases that don't need to stay live.</summary>
     public async Task<IReadOnlyList<T>> GetAsync<T>(string collectionPath, string orderByField = "createdAt")
         where T : FirestoreDocument

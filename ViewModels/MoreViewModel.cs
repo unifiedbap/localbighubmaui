@@ -102,6 +102,11 @@ public partial class MoreViewModel : ObservableObject
             (Page)Application.Current!.Handler!.MauiContext!.Services.GetRequiredService<Views.TeamPage>());
 
     [RelayCommand]
+    private static async Task OpenSeoHealthAsync() =>
+        await Shell.Current.Navigation.PushAsync(
+            (Page)Application.Current!.Handler!.MauiContext!.Services.GetRequiredService<Views.SeoHealthPage>());
+
+    [RelayCommand]
     private async Task SignOutAsync()
     {
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;

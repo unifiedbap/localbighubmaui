@@ -29,6 +29,7 @@ client id (see below). Six modules remain unported.
 | `Views/JobsPage.xaml` | `apps/web/src/pages/Jobs.tsx` | List + status filters (read-only) |
 | `Views/TimePage.xaml` | `apps/web/src/pages/Time.tsx` | Clock in/out + month calendar of hours |
 | `Views/TeamPage.xaml` | `apps/web/src/pages/Time.tsx` (Manage Team) | Manager-only: link logins to crew |
+| `Views/SeoHealthPage.xaml` | — (new) | Manager-only: read-only SEO Health Score |
 | `Views/AgendaPage.xaml` | `apps/web/src/pages/Agenda.tsx` | Tasks + inline done/reopen |
 | `Views/CalendarPage.xaml` | `apps/web/src/pages/Calendar.tsx` | Upcoming agenda + external sync |
 | `Services/ModuleRegistry.cs` | — | Label/icon/route for every module, in one place |
@@ -92,6 +93,12 @@ generic subcollection rule now excludes `employees`, because overlapping
 matches UNION their allows — without the exclusion any member would still get
 writes.
 
+(The `isManager(companyId)` helper itself — plus the `companyRole` field it
+reads — landed as part of the SEO Health Score work below, on a branch in
+`unifiedbap/biglocalhub`; the `employees` carve-out described above is still
+outstanding. Check that repo's `firestore.rules` for current deploy state
+before relying on either.)
+
 Until that is deployed, the manager gate is **client-side only and bypassable**.
 The in-app checks (`SessionService.IsManager`) are convenience, not a security
 boundary.
@@ -145,6 +152,37 @@ says "Setup needed" rather than dropping the user into an auth screen that
 can't succeed. The client id is not a secret — installed apps get no client
 secret, and security comes from PKCE plus the registered redirect URI — so it
 is fine to commit.
+
+## SEO Health Score
+
+A read-only, plain-language SEO standing score for managers — score, a trend
+arrow against the previous check, and the top 2-3 opportunities in plain
+language. No fix controls, no technical drill-down: that stays in a separate,
+internal-only deep-audit CLI tool that this module has nothing to do with.
+
+**The backend lives in the northstarapp repo, not here.** Like Cloud
+Functions generally, `computeSeoHealthScore` (a weekly scheduled function),
+the `seoHealth/{companyId}` Firestore schema, and the security rule that
+gates it are in `unifiedbap/biglocalhub` — see
+`functions/src/seoHealth.ts` there for the full schema doc and scoring
+detail, and the `seoHealth/{companyId}` block in `firestore.rules`. This app
+is a pure read client: `Views/SeoHealthPage.xaml` +
+`ViewModels/SeoHealthViewModel.cs` do a one-shot read of that document and
+render it — nothing here computes a score or knows how one is computed.
+
+**Deliberately a top-level collection**, not nested under
+`companies/{companyId}`, so a future web-portal screen reads the exact same
+tenant-scoped document through the exact same rule with zero backend
+changes — the whole point of building this UI-agnostic from the start.
+
+**Pull-to-refresh re-reads the stored document; it does not trigger a new
+scan.** Re-scans stay on the Cloud Function's weekly schedule so the check
+stays cheap across every company — a per-tap live re-scan would defeat that.
+
+**Manager-only**, via the same `companyRole` gate as Manage Team (see below)
+— entered from **More → SEO Health**, not the tab bar or `company.enabledModules`,
+because this is a standing/status view for whoever owns the company's
+marketing decisions rather than a company-wide module toggle.
 
 ---
 
