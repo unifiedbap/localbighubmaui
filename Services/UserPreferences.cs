@@ -3,7 +3,7 @@ using BigLocalHub.Models;
 namespace BigLocalHub.Services;
 
 /// <summary>
-/// Per-user UI preferences — currently which four modules appear as the
+/// Per-user UI preferences — currently which six modules appear as the
 /// Dashboard's Quick Actions.
 ///
 /// Stored in device-local <see cref="Preferences"/> rather than on
@@ -32,14 +32,20 @@ public class UserPreferences
     public static readonly string[] DefaultQuickActions =
         [Modules.Jobs, Modules.Time, Modules.Calendar, Modules.Agenda];
 
-    public const int SlotCount = 4;
+    /// <summary>
+    /// Six slots, only four defaults above — GetQuickActions tops the
+    /// remainder up from whatever else the company has enabled, so the extra
+    /// slots aren't blank on a first launch, just not opinionated about which
+    /// two modules fill them.
+    /// </summary>
+    public const int SlotCount = 6;
 
     private static string KeyFor(string uid) => QuickActionsKeyPrefix + uid;
 
     /// <summary>
     /// The user's chosen modules, filtered to what their company actually has
     /// enabled and this client implements, then topped up from the defaults so
-    /// the grid is never short. A company without, say, Time still gets four
+    /// the grid is never short. A company without, say, Time still gets six
     /// usable tiles.
     /// </summary>
     public IReadOnlyList<string> GetQuickActions(string uid, IEnumerable<string> enabledModules)

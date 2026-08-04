@@ -47,9 +47,11 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// The four customizable shortcut tiles. Defaults to Jobs / Time /
-    /// Calendar / Agenda and is overridable per user — see UserPreferences for
-    /// why the choice is stored on the device rather than on the user doc.
+    /// The six customizable shortcut tiles. Defaults to Jobs / Time /
+    /// Calendar / Agenda plus two more topped up from whatever else the
+    /// company has enabled, and is overridable per user — see
+    /// UserPreferences for why the choice is stored on the device rather
+    /// than on the user doc.
     /// </summary>
     public ObservableCollection<QuickAction> QuickActions { get; } = [];
 
