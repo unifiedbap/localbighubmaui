@@ -35,6 +35,7 @@ public static class MauiProgram
         // context provider at the root of the web and Expo trees.
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddSingleton<UserPreferences>();
+        builder.Services.AddSingleton<SeoHealthScanService>();
 
         // ── Calendar bridges ────────────────────────────────────────────────
         // Registered as a collection so CalendarViewModel takes

@@ -66,6 +66,13 @@
                         </Grid>
                     </Border>
 
+                    <!-- Manual scan — server-side rate-limited, so this can be
+                         tapped any time without worrying about hammering the
+                         PageSpeed quota. -->
+                    <Button Text="{Binding ScanButtonText}" Command="{Binding ScanNowCommand}"
+                            IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBool}}"
+                            Style="{StaticResource ButtonSecondary}" />
+
                     <!-- ── Top opportunities ─────────────────────────────────── -->
                     <VerticalStackLayout IsVisible="{Binding HasScore}" Spacing="{StaticResource Space3}">
                         <Label Text="WHAT WOULD HELP MOST" Style="{StaticResource TextSectionLabel}" />

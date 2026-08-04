@@ -176,13 +176,32 @@ tenant-scoped document through the exact same rule with zero backend
 changes — the whole point of building this UI-agnostic from the start.
 
 **Pull-to-refresh re-reads the stored document; it does not trigger a new
-scan.** Re-scans stay on the Cloud Function's weekly schedule so the check
-stays cheap across every company — a per-tap live re-scan would defeat that.
+scan.** A scan only happens two ways: the Cloud Function's weekly schedule, or
+the **Scan now** button (see below) — never as a side effect of opening or
+refreshing the screen.
 
 **Manager-only**, via the same `companyRole` gate as Manage Team (see below)
 — entered from **More → SEO Health**, not the tab bar or `company.enabledModules`,
 because this is a standing/status view for whoever owns the company's
-marketing decisions rather than a company-wide module toggle.
+marketing decisions rather than a company-wide module toggle. A compact
+version of the same score also appears as a manager-only widget on the
+Dashboard tab (`ShowSeoWidget` in `DashboardViewModel`), so it's visible
+without a second tap for whoever it's actually relevant to.
+
+### Manual scan
+
+Both `SeoHealthPage` and the Dashboard widget have a **Scan now** button,
+wired through `Services/SeoHealthScanService.cs` to a plain HTTPS Cloud
+Function (`scanCompanySeoHealth`, in `unifiedbap/biglocalhub`) — a POST with
+a Firebase ID token in the `Authorization` header, not a Plugin.Firebase
+callable, so no extra native plugin dependency was needed for one endpoint.
+
+The endpoint re-implements the same manager/admin authorization check as
+`isManager()` in `firestore.rules` (Cloud Functions run under the Admin SDK
+and never go through rules themselves) and is rate-limited server-side to one
+scan per company per 15 minutes — tapping the button repeatedly returns a
+plain "You can scan again in N minutes" error rather than burning PageSpeed
+Insights quota.
 
 ---
 
