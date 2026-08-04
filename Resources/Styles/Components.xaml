@@ -13,6 +13,22 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- ── Template override ─────────────────────────────────────────────── -->
+    <!-- The stock MAUI project template (Resources/Styles/Styles.xaml, still
+         merged ahead of this file) sets every BoxView's BackgroundColor to
+         Gray950 — near-black — even in light theme. Every "clearance" spacer
+         under the floating iOS tab bar (<BoxView HeightRequest="72"
+         Color="Transparent" />, used on every page) only ever set Color, the
+         BoxView's own fill property, never BackgroundColor — so the
+         template's near-black BackgroundColor rendered right through the
+         "transparent" spacer as a solid black bar. This dictionary merges
+         after Styles.xaml (same mechanism App.xaml already relies on for the
+         implicit Label style), so it wins and fixes every page's spacer at
+         once instead of patching each one individually. -->
+    <Style TargetType="BoxView">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
     <!-- ── Elevation ─────────────────────────────────────────────────────── -->
     <!-- Deliberately subtle: this app is read outdoors in direct sun, where a
          heavy shadow either disappears (too light) or reads as a smudge (too
