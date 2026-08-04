@@ -159,6 +159,24 @@ public static class TaskStatuses
         Labels.TryGetValue(status, out var l) ? l : status;
 }
 
+/// <summary>Impact levels on a SeoOpportunity, as written by computeSeoHealthScore.</summary>
+public static class SeoImpacts
+{
+    public const string High   = "high";
+    public const string Medium = "medium";
+    public const string Low    = "low";
+
+    public static readonly IReadOnlyDictionary<string, string> Labels = new Dictionary<string, string>
+    {
+        [High]   = "High impact",
+        [Medium] = "Medium impact",
+        [Low]    = "Low impact",
+    };
+
+    public static string Label(string impact) =>
+        Labels.TryGetValue(impact, out var l) ? l : impact;
+}
+
 public static class TaskPriorities
 {
     public const string Low    = "low";

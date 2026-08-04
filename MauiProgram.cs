@@ -55,6 +55,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AgendaViewModel>();
         builder.Services.AddTransient<CalendarViewModel>();
         builder.Services.AddTransient<TeamViewModel>();
+        builder.Services.AddTransient<SeoHealthViewModel>();
 
         // ── Pages ───────────────────────────────────────────────────────────
         builder.Services.AddTransient<LoginPage>();
@@ -66,6 +67,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AgendaPage>();
         builder.Services.AddTransient<CalendarPage>();
         builder.Services.AddTransient<TeamPage>();
+        builder.Services.AddTransient<SeoHealthPage>();
         builder.Services.AddTransient<AppShell>();
 
 #if DEBUG

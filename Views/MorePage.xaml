@@ -126,6 +126,21 @@
                                TextColor="{StaticResource ColorAccent}" VerticalOptions="Center" />
                     </Grid>
                 </Border>
+
+                <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenSeoHealthCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="{StaticResource Space1}">
+                            <Label Text="SEO Health" Style="{StaticResource TextCardPrimary}" />
+                            <Label Text="Your site's SEO score and what would help most"
+                                   Style="{StaticResource TextCaption}" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="›" FontSize="{StaticResource FontTitle}"
+                               TextColor="{StaticResource ColorAccent}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
             </VerticalStackLayout>
 
             <!-- One primary action for this screen -->

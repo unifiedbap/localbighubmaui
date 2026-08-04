@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="BigLocalHub.Views.SeoHealthPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:BigLocalHub.ViewModels"
+    x:DataType="vm:SeoHealthViewModel"
+    Title="SEO Health"
+    BackgroundColor="{StaticResource ColorPageBg}">
+
+    <Grid>
+
+        <!-- Non-managers shouldn't reach this screen, but if they do, say so
+             plainly rather than showing an empty status view. -->
+        <ScrollView IsVisible="{Binding IsManager, Converter={StaticResource InverseBool}}">
+            <Border Style="{StaticResource Card}" Margin="16" VerticalOptions="Center">
+                <VerticalStackLayout Spacing="{StaticResource Space1}">
+                    <Label Text="Managers only" Style="{StaticResource TextCardPrimary}" />
+                    <Label Text="Ask a manager at your company about your site's SEO standing."
+                           Style="{StaticResource TextCardSecondary}" />
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+
+        <!-- Pull-to-refresh re-reads the same stored score — it does not
+             trigger a new scan. Scans stay on the Cloud Function's weekly
+             schedule to keep the check cheap across every company. -->
+        <RefreshView IsVisible="{Binding IsManager}" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+            <ScrollView>
+                <VerticalStackLayout Padding="{StaticResource PagePadding}" Spacing="{StaticResource Space4}">
+
+                    <Border IsVisible="{Binding Error, Converter={StaticResource IsNotNullOrEmpty}}"
+                            BackgroundColor="{StaticResource ColorDangerTint}" Stroke="{StaticResource ColorDanger}"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                        <Label Text="{Binding Error}" TextColor="{StaticResource ColorDanger}" />
+                    </Border>
+
+                    <!-- Nothing scanned yet — first weekly check hasn't run for this company. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasScore, Converter={StaticResource InverseBool}}">
+                        <VerticalStackLayout Spacing="{StaticResource Space1}">
+                            <Label Text="No scan yet" Style="{StaticResource TextCardPrimary}" />
+                            <Label Text="Your site's first SEO Health Score will appear here after this week's scheduled check."
+                                   Style="{StaticResource TextCardSecondary}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- ── Score ──────────────────────────────────────────────── -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasScore}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="{StaticResource Space4}">
+                            <Border Grid.Column="0" BackgroundColor="{Binding ScoreTint}" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 44" WidthRequest="88" HeightRequest="88"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Score}" Style="{StaticResource TextDisplay}"
+                                       TextColor="{Binding ScoreInk}"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                                <Label Text="{Binding ScoreLabel}" Style="{StaticResource TextHeading}" TextColor="{Binding ScoreInk}" />
+                                <Label Text="{Binding LastCheckedText}" Style="{StaticResource TextCaption}" />
+                                <HorizontalStackLayout IsVisible="{Binding HasTrend}" Spacing="4">
+                                    <Label Text="{Binding TrendArrow}" TextColor="{Binding TrendColor}" FontAttributes="Bold" />
+                                    <Label Text="{Binding TrendText}" Style="{StaticResource TextCaption}" TextColor="{Binding TrendColor}" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- ── Top opportunities ─────────────────────────────────── -->
+                    <VerticalStackLayout IsVisible="{Binding HasScore}" Spacing="{StaticResource Space3}">
+                        <Label Text="WHAT WOULD HELP MOST" Style="{StaticResource TextSectionLabel}" />
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Opportunities}" Spacing="{StaticResource Space3}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SeoOpportunityRow">
+                                    <Border Style="{StaticResource Card}">
+                                        <VerticalStackLayout Spacing="{StaticResource Space2}">
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource Space3}">
+                                                <Label Grid.Column="0" Text="{Binding Title}" Style="{StaticResource TextCardPrimary}" />
+                                                <Border Grid.Column="1" BackgroundColor="{Binding ImpactTint}" StrokeThickness="0"
+                                                        StrokeShape="RoundRectangle 8" Padding="10,5" VerticalOptions="Start">
+                                                    <Label Text="{Binding ImpactLabel}" Style="{StaticResource BadgeLabel}" TextColor="{Binding ImpactInk}" />
+                                                </Border>
+                                            </Grid>
+                                            <Label Text="{Binding Explanation}" Style="{StaticResource TextCardSecondary}" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <!-- Clearance for the floating iOS tab bar -->
+                    <BoxView HeightRequest="72" Color="Transparent" />
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

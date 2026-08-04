@@ -260,6 +260,57 @@ public class Employee : FirestoreDocument
     public bool IsLinked => !string.IsNullOrWhiteSpace(Uid);
 }
 
+/// <summary>
+/// Client-facing SEO Health Score — read-only, plain-language standing, NOT
+/// the internal deep-audit CLI tool (that stays interactive and
+/// internal-only). Written weekly by the computeSeoHealthScore Cloud
+/// Function in the northstarapp repo; full scoring detail lives in that
+/// function's source comment, not here — this app only ever displays it.
+///
+/// Lives at the TOP-LEVEL <c>seoHealth/{companyId}</c>, not nested under
+/// <c>companies/{companyId}</c>, so a future web-portal screen reads the
+/// exact same tenant-scoped document through the exact same Firestore rule
+/// (manager-only) with zero backend changes — see FirestoreRepository.GetDocAsync.
+/// </summary>
+public class SeoHealth : FirestoreDocument
+{
+    /// <summary>0–100.</summary>
+    [FirestoreProperty("score")]
+    public int Score { get; set; }
+
+    /// <summary>"Poor" / "Needs Work" / "Good" / "Excellent" — computed server-side, not derived here.</summary>
+    [FirestoreProperty("scoreLabel")]
+    public string ScoreLabel { get; set; } = string.Empty;
+
+    [FirestoreProperty("lastChecked")]
+    public DateTime? LastChecked { get; set; }
+
+    /// <summary>Prior run's score, for the trend arrow. Null on the very first scan.</summary>
+    [FirestoreProperty("previousScore")]
+    public int? PreviousScore { get; set; }
+
+    /// <summary>Top 2–3 only, highest-impact first — the Cloud Function does the ranking.</summary>
+    [FirestoreProperty("topOpportunities")]
+    public List<SeoOpportunity> TopOpportunities { get; set; } = [];
+}
+
+/// <summary>
+/// One plain-language opportunity. No technical field names reach this
+/// model — the Cloud Function has already translated everything.
+/// </summary>
+public class SeoOpportunity
+{
+    [FirestoreProperty("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [FirestoreProperty("plainLanguageExplanation")]
+    public string PlainLanguageExplanation { get; set; } = string.Empty;
+
+    /// <summary>"high" / "medium" / "low" — see SeoImpacts.</summary>
+    [FirestoreProperty("impact")]
+    public string Impact { get; set; } = string.Empty;
+}
+
 public class Client : FirestoreDocument
 {
     [FirestoreProperty("name")]
