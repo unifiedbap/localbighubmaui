@@ -97,17 +97,21 @@ public static class MauiProgram
                     return false;
                 });
 
-                // Best-effort fix for a black bar behind iOS 18's floating/
-                // inset tab bar: that new style leaves a real gap around the
-                // pill down to the screen edge (including under the home
-                // indicator), and that gap is the raw UIWindow background —
-                // no MAUI Shell/Page BackgroundColor property paints it, so
-                // it defaults to black unless set natively. Matches the
-                // app's white surface (ColorSurface) instead.
+                // DIAGNOSTIC BUILD — not the real fix. Magenta instead of
+                // white so it's obvious from a screenshot alone whether
+                // setting UIApplication.SharedApplication.KeyWindow's
+                // background does anything at all to the black area behind
+                // the tab bar. If the bar turns magenta: this IS the right
+                // view, and the real fix is just swapping this color back to
+                // white. If it stays black: KeyWindow is probably null at
+                // FinishedLaunching (a scene-based app lifecycle, common on
+                // recent iOS/MAUI, doesn't have a window yet at this point)
+                // and the fix needs to hook a later/different lifecycle event
+                // instead — worth knowing before guessing again.
                 iOS.FinishedLaunching((_, __) =>
                 {
                     if (UIApplication.SharedApplication.KeyWindow is { } window)
-                        window.BackgroundColor = UIColor.White;
+                        window.BackgroundColor = UIColor.Magenta;
                     return true;
                 });
             });
