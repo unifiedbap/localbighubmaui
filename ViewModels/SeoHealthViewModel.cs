@@ -23,12 +23,14 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
 {
     private readonly SessionService _session;
     private readonly FirestoreRepository _repo;
+    private readonly SeoHealthScanService _scanService;
     private bool _loaded;
 
-    public SeoHealthViewModel(SessionService session, FirestoreRepository repo)
+    public SeoHealthViewModel(SessionService session, FirestoreRepository repo, SeoHealthScanService scanService)
     {
         _session = session;
         _repo = repo;
+        _scanService = scanService;
     }
 
     /// <summary>Gates the whole screen. UI convenience only — the real
@@ -48,6 +50,9 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
     [ObservableProperty] private string _trendArrow = string.Empty;
     [ObservableProperty] private string _trendText = string.Empty;
     [ObservableProperty] private Color _trendColor = Tokens.Palette.TextSecondary;
+
+    [ObservableProperty] private bool _isScanning;
+    [ObservableProperty] private string _scanButtonText = "Scan now";
 
     public ObservableCollection<SeoOpportunityRow> Opportunities { get; } = [];
 
@@ -86,6 +91,36 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
         }
     }
 
+    /// <summary>
+    /// Triggers an immediate scan via the scanCompanySeoHealth Cloud Function
+    /// instead of waiting for its weekly schedule, then re-reads the doc it
+    /// just wrote. Server-side rate-limited; a cooldown or auth failure
+    /// surfaces through Error exactly like a failed refresh.
+    /// </summary>
+    [RelayCommand]
+    private async Task ScanNowAsync()
+    {
+        if (IsScanning || string.IsNullOrWhiteSpace(_session.CompanyId)) return;
+
+        IsScanning = true;
+        ScanButtonText = "Scanning…";
+        Error = null;
+        try
+        {
+            await _scanService.ScanNowAsync(_session.CompanyId);
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+        finally
+        {
+            IsScanning = false;
+            ScanButtonText = "Scan now";
+        }
+    }
+
     private void Apply(SeoHealth? doc)
     {
         Opportunities.Clear();
@@ -103,7 +138,7 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
         Score = doc.Score;
         ScoreLabel = doc.ScoreLabel;
 
-        var tone = ToneForLabel(doc.ScoreLabel);
+        var tone = SeoHealthTones.ForScoreLabel(doc.ScoreLabel);
         ScoreInk = StatusTones.Ink(tone);
         ScoreTint = StatusTones.Tint(tone);
 
@@ -143,7 +178,7 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
         // display-side belt-and-suspenders, not the real limit.
         foreach (var o in doc.TopOpportunities.Take(3))
         {
-            var impactTone = ToneForImpact(o.Impact);
+            var impactTone = SeoHealthTones.ForImpact(o.Impact);
             Opportunities.Add(new SeoOpportunityRow(
                 o.Title,
                 o.PlainLanguageExplanation,
@@ -152,23 +187,6 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
                 StatusTones.Tint(impactTone)));
         }
     }
-
-    private static StatusTone ToneForLabel(string label) => label switch
-    {
-        "Excellent"  => StatusTone.Success,
-        "Good"       => StatusTone.Success,
-        "Needs Work" => StatusTone.Warning,
-        "Poor"       => StatusTone.Danger,
-        _            => StatusTone.Neutral,
-    };
-
-    private static StatusTone ToneForImpact(string impact) => impact switch
-    {
-        SeoImpacts.High   => StatusTone.Danger,
-        SeoImpacts.Medium => StatusTone.Warning,
-        SeoImpacts.Low    => StatusTone.Neutral,
-        _                 => StatusTone.Neutral,
-    };
 }
 
 public record SeoOpportunityRow(

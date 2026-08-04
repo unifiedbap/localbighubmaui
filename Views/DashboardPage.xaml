@@ -230,6 +230,45 @@
                 </Grid>
             </VerticalStackLayout>
 
+            <!-- ── SEO Health (manager only) ─────────────────────────────── -->
+            <VerticalStackLayout Spacing="{StaticResource Space3}"
+                                  IsVisible="{Binding ShowSeoWidget}">
+                <Label Text="SEO HEALTH" Style="{StaticResource TextSectionLabel}" />
+
+                <Border Style="{StaticResource Card}" MinimumHeightRequest="{StaticResource TouchTarget}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenSeoHealthCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{StaticResource Space3}">
+                        <Border Grid.Column="0" BackgroundColor="{Binding SeoScoreTint}" StrokeThickness="0"
+                                StrokeShape="RoundRectangle 28" WidthRequest="56" HeightRequest="56"
+                                VerticalOptions="Center">
+                            <Label Text="{Binding SeoScoreText}" Style="{StaticResource TextHeading}"
+                                   TextColor="{Binding SeoScoreInk}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="{StaticResource Space1}">
+                            <Label Text="{Binding SeoScoreLabel}" Style="{StaticResource TextCardPrimary}" />
+                            <Label Text="{Binding SeoLastCheckedText}" Style="{StaticResource TextCaption}" />
+                        </VerticalStackLayout>
+
+                        <Label Grid.Column="2" Text="›" FontSize="{StaticResource FontTitle}"
+                               TextColor="{StaticResource ColorAccent}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <Border IsVisible="{Binding SeoError, Converter={StaticResource IsNotNullOrEmpty}}"
+                        BackgroundColor="{StaticResource ColorDangerTint}" Stroke="{StaticResource ColorDanger}"
+                        StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="{StaticResource Space3}">
+                    <Label Text="{Binding SeoError}" TextColor="{StaticResource ColorDanger}" />
+                </Border>
+
+                <Button Text="{Binding SeoScanButtonText}" Command="{Binding ScanSeoNowCommand}"
+                        IsEnabled="{Binding IsScanningSeo, Converter={StaticResource InverseBool}}"
+                        Style="{StaticResource ButtonSecondary}" />
+            </VerticalStackLayout>
+
             <!-- ── Recent leads ───────────────────────────────────────────── -->
             <VerticalStackLayout Spacing="{StaticResource Space3}" IsVisible="{Binding IsLoading, Converter={StaticResource InverseBool}}">
                 <Grid ColumnDefinitions="*,Auto">

@@ -36,12 +36,14 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private const int OverdueAfterDays = 3;
 
     private readonly UserPreferences _prefs;
+    private readonly SeoHealthScanService _seoScanService;
 
-    public DashboardViewModel(SessionService session, FirestoreRepository repo, UserPreferences prefs)
+    public DashboardViewModel(SessionService session, FirestoreRepository repo, UserPreferences prefs, SeoHealthScanService seoScanService)
     {
         _session = session;
         _repo = repo;
         _prefs = prefs;
+        _seoScanService = seoScanService;
     }
 
     /// <summary>
@@ -152,6 +154,21 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     public ObservableCollection<ActionItem> NeedsAction { get; } = [];
     public ObservableCollection<LeadRow> RecentLeads { get; } = [];
 
+    // ── SEO Health widget ──────────────────────────────────────────────────
+    // Manager-only (same gate as More → SEO Health). One-shot, not a live
+    // listener — the score only ever changes on a weekly schedule or a
+    // manual scan, never mid-session on its own.
+    [ObservableProperty] private bool _showSeoWidget;
+    [ObservableProperty] private bool _hasSeoScore;
+    [ObservableProperty] private string _seoScoreText = string.Empty;
+    [ObservableProperty] private string _seoScoreLabel = string.Empty;
+    [ObservableProperty] private Color _seoScoreInk = Tokens.Palette.Neutral;
+    [ObservableProperty] private Color _seoScoreTint = Tokens.Palette.NeutralTint;
+    [ObservableProperty] private string _seoLastCheckedText = "Not checked yet";
+    [ObservableProperty] private bool _isScanningSeo;
+    [ObservableProperty] private string _seoScanButtonText = "Scan now";
+    [ObservableProperty] private string? _seoError;
+
     public void Load()
     {
         Greeting = GreetingForHour(DateTime.Now.Hour);
@@ -186,7 +203,77 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             _clients = clients;
             MainThread.BeginInvokeOnMainThread(Recompute);
         }, ReportError));
+
+        ShowSeoWidget = _session.IsManager;
+        if (ShowSeoWidget) _ = RefreshSeoWidgetAsync();
     }
+
+    private async Task RefreshSeoWidgetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_session.CompanyId)) return;
+
+        try
+        {
+            var doc = await _repo.GetDocAsync<SeoHealth>($"seoHealth/{_session.CompanyId}");
+            ApplySeoDoc(doc);
+        }
+        catch
+        {
+            // A widget failure shouldn't blank out the rest of the Dashboard —
+            // the dedicated SEO Health page surfaces the real error message.
+            HasSeoScore = false;
+        }
+    }
+
+    private void ApplySeoDoc(SeoHealth? doc)
+    {
+        HasSeoScore = doc is not null;
+        if (doc is null)
+        {
+            SeoScoreText = "—";
+            SeoScoreLabel = "No scan yet";
+            SeoLastCheckedText = "Tap Scan now to check your site";
+            return;
+        }
+
+        SeoScoreText = doc.Score.ToString();
+        SeoScoreLabel = doc.ScoreLabel;
+        var tone = SeoHealthTones.ForScoreLabel(doc.ScoreLabel);
+        SeoScoreInk = StatusTones.Ink(tone);
+        SeoScoreTint = StatusTones.Tint(tone);
+        SeoLastCheckedText = doc.LastChecked is { } checkedAt
+            ? $"Last checked {checkedAt.ToLocalTime():MMM d}"
+            : "Not checked yet";
+    }
+
+    [RelayCommand]
+    private async Task ScanSeoNowAsync()
+    {
+        if (IsScanningSeo || string.IsNullOrWhiteSpace(_session.CompanyId)) return;
+
+        IsScanningSeo = true;
+        SeoScanButtonText = "Scanning…";
+        SeoError = null;
+        try
+        {
+            await _seoScanService.ScanNowAsync(_session.CompanyId);
+            await RefreshSeoWidgetAsync();
+        }
+        catch (Exception ex)
+        {
+            SeoError = ex.Message;
+        }
+        finally
+        {
+            IsScanningSeo = false;
+            SeoScanButtonText = "Scan now";
+        }
+    }
+
+    [RelayCommand]
+    private static async Task OpenSeoHealthAsync() =>
+        await Shell.Current.Navigation.PushAsync(
+            (Page)Application.Current!.Handler!.MauiContext!.Services.GetRequiredService<Views.SeoHealthPage>());
 
     private void ReportError(Exception ex) => MainThread.BeginInvokeOnMainThread(() =>
     {
