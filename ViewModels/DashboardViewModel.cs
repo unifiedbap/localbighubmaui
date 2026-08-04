@@ -217,10 +217,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             var doc = await _repo.GetDocAsync<SeoHealth>($"seoHealth/{_session.CompanyId}");
             ApplySeoDoc(doc);
         }
-        catch
+        catch (Exception ex)
         {
             // A widget failure shouldn't blank out the rest of the Dashboard —
             // the dedicated SEO Health page surfaces the real error message.
+            // Still logged, so a silent failure here isn't invisible everywhere.
+            System.Diagnostics.Debug.WriteLine($"[seoHealth] dashboard widget refresh failed: {ex}");
             HasSeoScore = false;
         }
     }
@@ -241,9 +243,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         var tone = SeoHealthTones.ForScoreLabel(doc.ScoreLabel);
         SeoScoreInk = StatusTones.Ink(tone);
         SeoScoreTint = StatusTones.Tint(tone);
-        SeoLastCheckedText = doc.LastChecked is { } checkedAt
-            ? $"Last checked {checkedAt.ToLocalTime():MMM d}"
-            : "Not checked yet";
+        SeoLastCheckedText = $"Last checked {doc.LastChecked.ToLocalTime():MMM d}";
     }
 
     [RelayCommand]

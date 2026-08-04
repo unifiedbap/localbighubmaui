@@ -282,8 +282,18 @@ public class SeoHealth : FirestoreDocument
     [FirestoreProperty("scoreLabel")]
     public string ScoreLabel { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Non-nullable on purpose: Plugin.Firebase's Timestamp→.NET conversion
+    /// only special-cases an exact `typeof(DateTime)` property (see its
+    /// NSObjectExtensions/JavaObjectExtensions Cast()), so a `DateTime?` here
+    /// falls through to a DateTimeOffset and throws when it's assigned back
+    /// onto a nullable DateTime property. The server always sets this via
+    /// serverTimestamp() whenever the document exists at all, so there's no
+    /// real "missing timestamp on an existing doc" case to model as null —
+    /// "no scan yet" is already represented by SeoHealth itself being null.
+    /// </summary>
     [FirestoreProperty("lastChecked")]
-    public DateTime? LastChecked { get; set; }
+    public DateTime LastChecked { get; set; }
 
     /// <summary>Prior run's score, for the trend arrow. Null on the very first scan.</summary>
     [FirestoreProperty("previousScore")]

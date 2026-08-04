@@ -81,9 +81,15 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
         }
         catch (Exception ex)
         {
+            // The generic "check your connection" message this used to show
+            // for anything non-permission-shaped made a real bug (e.g. a
+            // deserialization failure) indistinguishable from being offline.
+            // Surfacing the raw message costs nothing here — this is a
+            // read-only status view, not a form with something to protect.
+            System.Diagnostics.Debug.WriteLine($"[seoHealth] refresh failed: {ex}");
             Error = ex.Message.Contains("PERMISSION", StringComparison.OrdinalIgnoreCase)
                 ? "You don't have access to the SEO Health Score."
-                : "Couldn't load your SEO Health Score. Check your connection.";
+                : $"Couldn't load your SEO Health Score: {ex.Message}";
         }
         finally
         {
@@ -142,9 +148,7 @@ public partial class SeoHealthViewModel : ObservableObject, Views.ILoadable
         ScoreInk = StatusTones.Ink(tone);
         ScoreTint = StatusTones.Tint(tone);
 
-        LastCheckedText = doc.LastChecked is { } checkedAt
-            ? $"Last checked {checkedAt.ToLocalTime():MMM d}"
-            : "Not checked yet";
+        LastCheckedText = $"Last checked {doc.LastChecked.ToLocalTime():MMM d}";
 
         if (doc.PreviousScore is { } prev)
         {
