@@ -1,0 +1,16 @@
+{
+  "businessName": "Northstar Excavation",
+  "serviceArea": "Denver, CO",
+  "siteUrl": "https://example-client.com",
+  "sourceDir": "../client-sites/example-client",
+  "publicDir": "public",
+  "pagespeedApiKey": "",
+  "thresholds": {
+    "performanceMobile": 50,
+    "titleMinLength": 30,
+    "titleMaxLength": 60,
+    "metaDescriptionMinLength": 50,
+    "metaDescriptionMaxLength": 160,
+    "oversizedImageKb": 500
+  }
+}
